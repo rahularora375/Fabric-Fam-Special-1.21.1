@@ -1,0 +1,11 @@
+{
+    "item.famspecial.punjabi_lassi": "Punjabi Lassi",
+    "tooltip.famspecial.punjabi_lassi": "Press §eShift§r for more Information!",
+    "tooltip.famspecial.punjabi_lassi.shift_down": "Lassi te khudai - jinni vadao vadh jandi hai",
+
+    "item.famspecial.radhe_radhe_guru_ji": "Radhe Radhe Guru Ji",
+    "tooltip.famspecial.radhe_radhe_guru_ji": "Press §eShift§r for more Information!",
+    "tooltip.famspecial.radhe_radhe_guru_ji.shift_down": "Blessed by our beloved radhe radhe guruji's divine love for bakchodi, this sacred relic shields the bearer from death and suffering, guiding them toward dharma and light",
+
+    "itemgroup.famspecial.fam_special_items": "Fam Special Items"
+}
