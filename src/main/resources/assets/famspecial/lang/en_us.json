@@ -7,5 +7,8 @@
     "tooltip.famspecial.radhe_radhe_guru_ji": "Press §eShift§r for more Information!",
     "tooltip.famspecial.radhe_radhe_guru_ji.shift_down": "Blessed by our beloved radhe radhe guruji's divine love for bakchodi, this sacred relic shields the bearer from death and suffering, guiding them toward dharma and light",
 
-    "itemgroup.famspecial.fam_special_items": "Fam Special Items"
+    "itemgroup.famspecial.fam_special_items": "Fam Special Items",
+
+    "effect.famspecial.guru_ji_blessing": "Guru Ji's Blessing",
+    "sounds.famspecial.radhe_radhe_guru_ji_drink": "Drinking Radhe Radhe Guru Ji"
 }

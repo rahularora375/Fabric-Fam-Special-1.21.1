@@ -1,6 +1,7 @@
 package github.rahularora375.famspecial.item;
 
 import github.rahularora375.famspecial.FamSpecial;
+import github.rahularora375.famspecial.item.custom.RadheRadheGuruJiItem;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.Item;
@@ -15,7 +16,7 @@ import net.minecraft.util.Identifier;
 import java.util.List;
 
 public class ModItems {
-    public static final Item PUNJABI_LASSI = registerItem("punjabi_lassi", new DrinkableItem(new Item.Settings().food(ModFoodComponents.PUNJABI_LASSI)) {
+    public static final Item PUNJABI_LASSI = registerItem("punjabi_lassi", new DrinkableItem(new Item.Settings().food(ModFoodComponents.PUNJABI_LASSI).maxCount(16)) {
         @Override
         public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
             if(Screen.hasShiftDown()) {
@@ -28,18 +29,7 @@ public class ModItems {
         }
     });
 
-    public static final Item RADHE_RADHE_GURU_JI = registerItem("radhe_radhe_guru_ji", new DrinkableItem(new Item.Settings().food(ModFoodComponents.RADHE_RADHE_GURU_JI)) {
-        @Override
-        public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
-            if(Screen.hasShiftDown()) {
-                tooltip.add(Text.translatable("tooltip.famspecial.radhe_radhe_guru_ji.shift_down"));
-            } else {
-                tooltip.add(Text.translatable("tooltip.famspecial.radhe_radhe_guru_ji"));
-            }
-
-            super.appendTooltip(stack, context, tooltip, type);
-        }
-    });
+    public static final Item RADHE_RADHE_GURU_JI = registerItem("radhe_radhe_guru_ji", new RadheRadheGuruJiItem(new Item.Settings().food(ModFoodComponents.RADHE_RADHE_GURU_JI).maxCount(16)));
 
 
     private static Item registerItem(String name, Item item) {
