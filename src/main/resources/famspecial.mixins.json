@@ -3,7 +3,8 @@
 	"package": "github.rahularora375.famspecial.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"ExampleMixin"
+		"ExampleMixin",
+		"MixinHostileEntity"
 	],
 	"injectors": {
 		"defaultRequire": 1
