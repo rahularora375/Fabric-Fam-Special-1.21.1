@@ -16,7 +16,8 @@ public class ModFoodComponents {
 
     public static final FoodComponent RADHE_RADHE_GURU_JI = new FoodComponent.Builder()
             .alwaysEdible()
-            .statusEffect(new StatusEffectInstance(StatusEffects.SATURATION, 600, 2), 1.0f)
+            .statusEffect(new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 40, 2), 1.0f)
+            .statusEffect(new StatusEffectInstance(StatusEffects.SATURATION, 40, 10), 1.0f)
             .statusEffect(new StatusEffectInstance(ModEffects.GURU_JI_BLESSING, 600, 0), 1.0f)
             .build();
 }
