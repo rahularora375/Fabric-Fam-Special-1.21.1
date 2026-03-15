@@ -3,38 +3,23 @@
 	"id": "famspecial",
 	"version": "${version}",
 	"name": "Fam Special",
-	"description": "Special Mod for FAM!",
+	"description": "Adds 13 custom legendary loot items (enchanted diamond gear with unique names and lore) to vanilla structure chests across S, A, and F tiers, plus explorer maps and a Mending book.",
 	"authors": [
 		"rahularora375"
 	],
-	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
-	},
+	"contact": {},
 	"license": "MIT",
 	"icon": "assets/famspecial/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
 			"github.rahularora375.famspecial.FamSpecial"
-		],
-		"fabric-datagen": [
-			"github.rahularora375.famspecial.FamSpecialDataGenerator"
-		],
-		"client": [
-			"github.rahularora375.famspecial.FamSpecialClient"
 		]
 	},
-	"mixins": [
-		"famspecial.mixins.json"
-	],
 	"depends": {
-		"fabricloader": ">=0.16.10",
-		"minecraft": "~1.21.1",
+		"fabricloader": ">=0.18.1",
+		"minecraft": "~1.21.11",
 		"java": ">=21",
 		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
 	}
 }

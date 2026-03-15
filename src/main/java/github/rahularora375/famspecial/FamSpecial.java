@@ -1,11 +1,8 @@
 package github.rahularora375.famspecial;
 
-import github.rahularora375.famspecial.effect.ModEffects;
 import github.rahularora375.famspecial.item.ModItemGroups;
-import github.rahularora375.famspecial.item.ModItems;
-import github.rahularora375.famspecial.sound.ModSounds;
+import github.rahularora375.famspecial.loot.ModLootTableModifier;
 import net.fabricmc.api.ModInitializer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +13,7 @@ public class FamSpecial implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModItemGroups.registerItemGroups();
-		ModItems.registerModItems();
-		ModEffects.registerEffects();
-		ModSounds.registerSounds();
+		ModLootTableModifier.register();
+		LOGGER.info("Initialized {}", MOD_ID);
 	}
 }
