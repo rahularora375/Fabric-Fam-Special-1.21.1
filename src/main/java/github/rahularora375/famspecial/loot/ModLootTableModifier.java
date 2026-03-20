@@ -33,9 +33,9 @@ import java.util.Set;
 public class ModLootTableModifier {
 
     private enum LootTier {
-        S(48),
-        A(154),
-        F(271);
+        S(64),
+        A(176),
+        F(420);
 
         final int emptyWeight;
 
