@@ -241,7 +241,7 @@ public class ModLootTableModifier {
                 new Text[]{Text.literal("When she walks, gravity kneels")},
                 enchants,
                 ench(Enchantments.PROTECTION, 5, 6),
-                ench(Enchantments.SWIFT_SNEAK, 4, 4)));
+                ench(Enchantments.FEATHER_FALLING, 5, 6)));
 
         // Clutch God Leggings
         pool.with(namedItem(Items.DIAMOND_LEGGINGS, 1,
@@ -252,6 +252,7 @@ public class ModLootTableModifier {
                         Text.literal("Ye hi to time hai nashe karne ka")
                 },
                 enchants,
+                ench(Enchantments.SWIFT_SNEAK, 4, 4),
                 ench(Enchantments.PROTECTION, 5, 6)));
 
         // === Mending Book ===
