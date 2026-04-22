@@ -3,7 +3,7 @@
 	"id": "famspecial",
 	"version": "${version}",
 	"name": "Fam Special",
-	"description": "Adds 13 custom legendary loot items (enchanted diamond gear with unique names and lore) to vanilla structure chests across S, A, and F tiers, plus explorer maps and a Mending book.",
+	"description": "Adds 13 custom legendary loot items (enchanted diamond gear with unique names and lore) to vanilla structure chests across S, A, and F tiers, plus explorer maps and a Mending book. Install on BOTH client and server in multiplayer — a login handshake rejects clients running a different mod version (or no mod at all).",
 	"authors": [
 		"rahularora375"
 	],
@@ -14,8 +14,14 @@
 	"entrypoints": {
 		"main": [
 			"github.rahularora375.famspecial.FamSpecial"
+		],
+		"client": [
+			"github.rahularora375.famspecial.client.FamSpecialClient"
 		]
 	},
+	"mixins": [
+		"famspecial.mixins.json"
+	],
 	"depends": {
 		"fabricloader": ">=0.18.1",
 		"minecraft": "~1.21.11",

@@ -42,3 +42,7 @@ replay_*.log
 # claude
 
 .claude/
+
+# decompiled vanilla sources (genSources spillage)
+
+/net/
