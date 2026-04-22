@@ -1,0 +1,27 @@
+{
+	"required": true,
+	"package": "github.rahularora375.famspecial.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"GrindstoneScreenHandlerMixin",
+		"AnvilScreenHandlerMixin",
+		"TridentItemMixin",
+		"LivingEntityMixin",
+		"ApplyExhaustionEnchantmentEffectMixin",
+		"ItemStackMixin",
+		"ItemStackAttributeMixin",
+		"ItemStackEnchantmentsMixin",
+		"EnchantmentHelperMixin",
+		"EnchantmentHelperForEachMixin",
+		"MobEntityAccessor",
+		"LivingEntityKnockbackMixin",
+		"PlayerEntityExhaustionMixin",
+		"ServerPlayNetworkHandlerClickSlotMixin",
+		"ServerPlayNetworkHandlerMixin",
+		"LivingEntityEquipMixin",
+		"LivingEntityRiptideLandMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
