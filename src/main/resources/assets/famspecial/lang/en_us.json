@@ -1,3 +1,25 @@
 {
-    "itemgroup.famspecial.fam_special_items": "Fam Special Items"
+    "itemgroup.famspecial.gear": "Fam Special Gear",
+    "itemgroup.famspecial.armor": "Fam Special Armor",
+    "effect.famspecial.messmers_flame_aegis": "Messmer's Flame Aegis",
+    "effect.famspecial.messmers_venom": "Messmer's Venom",
+    "effect.famspecial.healers_vision": "Healer's Vision",
+    "effect.famspecial.empowered_riptide": "Empowered Riptide",
+    "effect.famspecial.night_strength": "Nightfall's Might",
+    "effect.famspecial.tireless_lunge": "Tireless Lunge",
+    "effect.famspecial.stormlight": "Stormlight",
+    "effect.famspecial.shardbearing": "Shardbearing",
+    "effect.famspecial.radiant_might": "Radiant Might",
+    "effect.famspecial.rotten_muscle": "Rotten Muscle",
+    "effect.famspecial.undead_resistance": "Undead Resistance",
+    "effect.famspecial.wither_touch": "Wither Touch",
+    "effect.famspecial.shadi_buff": "Shadi Buff",
+    "effect.famspecial.emperors_divide": "Emperor's Divide",
+    "effect.famspecial.suns_protection": "Sun's Protection",
+    "effect.famspecial.shuriman_endurance": "Shuriman Endurance",
+    "effect.famspecial.god_of_thunder": "God of Thunder",
+    "effect.famspecial.storms_awakening": "Storm's Awakening",
+    "effect.famspecial.asgardians_flight": "Asgardian's Flight",
+    "effect.famspecial.sages_grace": "Sage's Grace",
+    "item.famspecial.mjolnir": "Mjolnir"
 }
