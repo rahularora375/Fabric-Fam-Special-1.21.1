@@ -1,0 +1,12 @@
+{
+  "necromancer_summon": {
+    "sounds": [
+      { "name": "famspecial:zombiezzz", "stream": false }
+    ]
+  },
+  "bonus_diamond": {
+    "sounds": [
+      { "name": "famspecial:lucky", "stream": false }
+    ]
+  }
+}
