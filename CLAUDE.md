@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Fabric mod for Minecraft **1.21.11** (Java 21, Fabric Loom 1.14). Entrypoint: `github.rahularora375.famspecial.FamSpecial#onInitialize`. Mod id: `famspecial`.
 
-Purpose: adds themed custom gear items (custom names, lore, enchantments, passive effects) into two creative tabs (**Gear** for weapons + tools, **Armor** for sets) and injects a subset of them into vanilla structure chests. Ten theme groups: **OldFam**, **Mistborn**, **Pacifist**, **Poseidon**, **FireSerpent**, **Necromancer**, **KnightRadiant**, **EshEndraNavesh**, **Shurima**, **Thor**.
+Purpose: adds themed custom gear items (custom names, lore, enchantments, passive effects) into two creative tabs (**Gear** for weapons + tools, **Armor** for sets) and injects a subset of them into vanilla structure chests via three programmatic loot pools (`LegendaryPool` / `MapsPool` / `ThemedSetsPool`). Eleven theme groups: **OldFam**, **Mistborn**, **Pacifist**, **Poseidon**, **FireSerpent**, **Necromancer**, **KnightRadiant**, **EshEndraNavesh**, **Shurima**, **Thor**, **RaidersLegacy**.
 
 ## Routing
 

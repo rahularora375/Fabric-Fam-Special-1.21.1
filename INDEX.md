@@ -6,7 +6,7 @@ Source-file inventory. Each row: path (relative to `src/main/`) → one-line pur
 
 | File | Purpose | Doc |
 |---|---|---|
-| `java/github/rahularora375/famspecial/FamSpecial.java` | Main `ModInitializer`; wires 12 subsystems in order. | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/FamSpecial.java` | Main `ModInitializer`; wires 15 subsystems in order. | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/client/FamSpecialClient.java` | Client `ModInitializer`; tooltip callbacks + client-side registrations. | `SYSTEMS.md` |
 
 ## Components & effects
@@ -16,6 +16,8 @@ Source-file inventory. Each row: path (relative to `src/main/`) → one-line pur
 | `java/github/rahularora375/famspecial/component/ModComponents.java` | Custom `DataComponentType` registry (all `GRANTS_*`, `SET_ID`, `INDESTRUCTIBLE`, etc.). | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/effect/ModStatusEffects.java` | Custom status-effect registry (gameplay + cosmetic HUD badges). | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/sound/ModSounds.java` | Custom `SoundEvent` registry (`NECROMANCER_SUMMON`, `BONUS_DIAMOND`). | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/entity/ModEntities.java` | Custom `EntityType` registry (`VOLLEY_ARROW`); mirrors vanilla arrow tracking/dimensions. | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/entity/VolleyArrowEntity.java` | `ArrowEntity` subclass; zeroes `timeUntilRegen` on hit so Crusader's Volley shots 2/3 bypass iframes. | `SYSTEMS.md` |
 
 ## Item catalog
 
@@ -29,10 +31,12 @@ Source-file inventory. Each row: path (relative to `src/main/`) → one-line pur
 | `java/github/rahularora375/famspecial/item/entries/FireSerpentItems.java` | Fire Serpent's Wrath + Fire Serpent 4-piece armor (Messmer's Venom set bonus). | `ITEMS.md` |
 | `java/github/rahularora375/famspecial/item/entries/NecromancerItems.java` | Thriller's Edge + Necromancer 4-piece armor (Zombie Reinforcements set bonus). | `ITEMS.md` |
 | `java/github/rahularora375/famspecial/item/entries/KnightRadiantItems.java` | Oathbringer + Shard 4-piece armor (indestructible / regen / Radiant Might / Shardbearing). | `ITEMS.md` |
-| `java/github/rahularora375/famspecial/item/entries/EshEndraNaveshItems.java` | Just Hit Bro pickaxe + Esh-Endra-Navesh 4-piece armor (Haste 4/4 + helmet-gated Bad Omen). | `ITEMS.md` |
-| `java/github/rahularora375/famspecial/item/entries/ShurimaItems.java` | Sun Disc Spear + Shurima 4-piece armor (Shuriman Endurance 4/4 + helmet-gated Sun's Protection, both desert-gated; spear's Emperor's Divide bypasses target KB-resistance). | `ITEMS.md` |
-| `java/github/rahularora375/famspecial/item/entries/ThorItems.java` | Mjolnir + Thor 5-piece set (Thunderhelm + 3 armor + Mjolnir; God of Thunder, Storm's Awakening, Asgardian's Flight). | `ITEMS.md` |
+| `java/github/rahularora375/famspecial/item/entries/EshEndraNaveshItems.java` | Just Hit Bro pickaxe + Esh-Endra-Navesh 4-piece armor (Haste 4/4 + boots-gated Bad Omen). | `ITEMS.md` |
+| `java/github/rahularora375/famspecial/item/entries/ShurimaItems.java` | Sun Disc Spear + Shurima 4-piece armor (Shuriman Endurance 4/4 + boots-gated Sun's Protection, both desert-gated; spear's Emperor's Divide bypasses target KB-resistance). | `ITEMS.md` |
+| `java/github/rahularora375/famspecial/item/entries/ThorItems.java` | Mjolnir + Thor 5-piece set (Thunderhelm + 3 armor + Mjolnir; God of Thunder, Storm's Awakening on Warrior's Greaves, Asgardian's Flight). | `ITEMS.md` |
+| `java/github/rahularora375/famspecial/item/entries/RaidersLegacyItems.java` | Fortune & Glory crossbow + Raider's Legacy 4-piece armor set (Bounty Hunter, Technoblade Never Dies, Crusader's Volley). | `ITEMS.md` |
 | `java/github/rahularora375/famspecial/item/MjolnirMaceItem.java` | `MaceItem` subclass; right-click charges a dry-land riptide launch gated on `ASGARDIANS_FLIGHT`. | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/item/FortuneGloryItem.java` | `CrossbowItem` subclass; one charge fires three shots back-to-back at a 2-tick cadence via a `VolleyArrowEntity` queue drained on server tick. | `SYSTEMS.md` |
 
 ## Runtime systems
 
@@ -43,9 +47,12 @@ Source-file inventory. Each row: path (relative to `src/main/`) → one-line pur
 | `java/github/rahularora375/famspecial/item/NecromancerSummon.java` | Event-driven 4/4 Necromancer summon: spawn, target-lock, friendly-fire gate, lifetime cleanup. | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/item/ThorEffects.java` | Event-driven Thor handlers: lightning-on-hit roll (Mjolnir mainhand) + Storm's Awakening kill trigger (Thunderhelm) with per-player cooldown. | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/item/BlockBreakHandler.java` | `PlayerBlockBreakEvents.AFTER` hook rolling bonus-diamond drops for `BONUS_DIAMOND_CHANCE`-flagged pickaxes. | `SYSTEMS.md` |
-| `java/github/rahularora375/famspecial/loot/ModLootTableModifier.java` | Hooks `LootTableEvents.MODIFY`; delegates to `LegendaryPool` / `MapsPool`. | `SYSTEMS.md` |
-| `java/github/rahularora375/famspecial/loot/LegendaryPool.java` | 4-tier legendary pool (Crazy/S/A/F) + guaranteed-Mending book. | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/item/BountyHunterKills.java` | `ServerLivingEntityEvents.AFTER_DEATH` hook rolling 5%/1–3-diamond drops on arrow kills by `BOUNTY_HUNTER`-legged wearers. | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/loot/ModLootTableModifier.java` | Hooks `LootTableEvents.MODIFY`; delegates to `LegendaryPool` / `MapsPool` / `ThemedSetsPool`. | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/loot/LegendaryPool.java` | 4-tier legendary pool (Crazy/S/A/F) + weight-30 Mending book. | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/loot/MapsPool.java` | 4-tier maps pool (jungle temple / ancient city / woodland mansion). | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/loot/ThemedSetsPool.java` | 4-tier themed-gear pool (50 items × 10, 5 from each of 10 themes excluding OldFam) + weight-100 Mending book; reuses `LegendaryPool`'s tier mapping. | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/loot/PrebuiltStackEntry.java` | Custom `LootPoolEntryType` (subclass of `LeafEntry`) wrapping a `Supplier<ItemStack>`; per-roll `.copy()` of factory output. Registered from `FamSpecial#onInitialize`. | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/loot/LootPoolHelpers.java` | `namedItem(...)` builder using loot functions; supports enchant ranges. | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/client/HealthOverlay.java` | Client-only world-space HP bars driven by `SHOWS_ENTITY_HP` helmet flag. | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/net/VersionHandshake.java` | Login-phase version query on `famspecial:version`; strict-equality kick on mismatch. | `SYSTEMS.md` |
@@ -56,22 +63,22 @@ All under `java/github/rahularora375/famspecial/mixin/`. All documented in `MIXI
 
 | File | Purpose |
 |---|---|
-| `GrindstoneScreenHandlerMixin.java` | TAIL-blank grindstone result for `HEALS_TARGET` items. |
-| `AnvilScreenHandlerMixin.java` | TAIL-blank anvil result for `HEALS_TARGET` or `BLOCKS_MENDING`+Mending combos. |
+| `GrindstoneScreenHandlerMixin.java` | TAIL re-stamp of custom components on merged-elytra disenchant outputs; otherwise vanilla. |
+| `AnvilScreenHandlerMixin.java` | HEAD-cancellable themed-diamond-chestplate → vanilla-elytra merge; otherwise vanilla. |
 | `TridentItemMixin.java` | Dry-land riptide for Poseidon 4/4 (two `@Redirect`s on `isTouchingWaterOrRain`). |
-| `LivingEntityMixin.java` | Four `@ModifyReturnValue`s on `modifyAppliedDamage` (Messmer's Flame Aegis / Shardbearing / Undead Resistance / Sun's Protection). |
+| `LivingEntityMixin.java` | Five `@ModifyReturnValue`s on `modifyAppliedDamage` (Messmer's Flame Aegis / Shardbearing / Undead Resistance / Sun's Protection / Technoblade Never Dies fall immunity). |
 | `LivingEntityKnockbackMixin.java` | `@ModifyExpressionValue` on `LivingEntity#takeKnockback` `getAttributeValue` invoke; zeroes `KNOCKBACK_RESISTANCE` lookup when attacker has `EMPERORS_DIVIDE` (Sun Disc Spear). |
 | `PlayerEntityExhaustionMixin.java` | HEAD-cancel on `PlayerEntity#addExhaustion` while player has `SHURIMAN_ENDURANCE` (Shurima 4/4 saturation lock). |
 | `ApplyExhaustionEnchantmentEffectMixin.java` | Cancels Lunge exhaustion when stack has `NO_LUNGE_HUNGER`. |
 | `ItemStackMixin.java` | Clamps damage at `maxDamage-1` for `INDESTRUCTIBLE` stacks; plays break sound on transition. |
 | `ItemStackAttributeMixin.java` | Cancels attribute modifiers for broken `INDESTRUCTIBLE` stacks. |
 | `ItemStackEnchantmentsMixin.java` | Returns empty enchantments from `getEnchantments()` for broken `INDESTRUCTIBLE` stacks (tooltip path). |
-| `EnchantmentHelperMixin.java` | Filters Mending out of `getPossibleEntries` for `BLOCKS_MENDING` stacks. |
 | `EnchantmentHelperForEachMixin.java` | Cancels both `forEachEnchantment` overloads for broken `INDESTRUCTIBLE` stacks (effect-dispatch path). |
 | `MobEntityAccessor.java` | `@Accessor` interface widening `MobEntity.targetSelector` for Necromancer target swap. |
 | `LivingEntityEquipMixin.java` | HEAD-inject on `onEquipStack`; calls `ArmorEffects.refreshBonusesFor(player)` once — handles both APPLY and STRIP via the MOD_MANAGED diff, no per-effect enumeration. |
 | `ServerPlayNetworkHandlerMixin.java` | TAIL-inject on `onUpdateSelectedSlot`; calls `ArmorEffects.refreshBonusesFor(player)` for the hotbar-swap case. |
 | `ServerPlayNetworkHandlerClickSlotMixin.java` | TAIL-inject on `onClickSlot` (survival drag / shift-click / armor-swap-key) AND `onCreativeInventoryAction` (creative inventory tab drag); calls `ArmorEffects.refreshBonusesFor(player)` in each. Creative-tab armor drag does NOT route through `onClickSlot`, so the second hook is load-bearing — without it, creative-mode HUD icons for armor-driven effects lagged up to 4 s. |
+| `LivingEntityRiptideLandMixin.java` | HEAD-inject on `LivingEntity#tickRiptide`; clears `riptideTicks` on vertical landing while the player has `ASGARDIANS_FLIGHT`, releasing the spin-attack pose so post-Mjolnir-launch swing input isn't silently eaten. Gated on the effect so Poseidon's dry-land riptide and vanilla tridents are unaffected. |
 
 ## Resources & config
 
@@ -84,4 +91,20 @@ All under `java/github/rahularora375/famspecial/mixin/`. All documented in `MIXI
 | `resources/assets/famspecial/lang/en_us.json` | Lang keys for effects, items, item group. | `SYSTEMS.md` |
 | `resources/assets/famspecial/textures/mob_effect/*.png` | Byte-for-byte vanilla-icon copies for custom status effects — do not author custom art. | `SYSTEMS.md` |
 | `resources/data/famspecial/tags/worldgen/structure/on_ancient_city_maps.json` | Structure tag backing the Ancient City explorer map destination. | `SYSTEMS.md` |
+| `resources/data/famspecial/tags/item/riptide_eligible.json` | Custom item tag = `#minecraft:enchantable/trident` ∪ `famspecial:mjolnir`; consumed by the vanilla Riptide enchantment override below. | `SYSTEMS.md` |
+| `resources/data/famspecial/tags/item/multishot_eligible.json` | Custom item tag containing only `minecraft:crossbow`; consumed by the vanilla Multishot enchantment override below to gate Multishot off Fortune & Glory. | `SYSTEMS.md` |
+| `resources/data/famspecial/tags/item/counts_as_crossbow.json` | Custom item tag = `minecraft:crossbow` ∪ `famspecial:fortune_and_glory`; consumed by the four crossbow-gated advancement overrides below to unlock advancement parity for the custom-id crossbow. | `SYSTEMS.md` |
+| `resources/data/famspecial/tags/item/counts_as_mace.json` | Custom item tag = `minecraft:mace` ∪ `famspecial:mjolnir`; consumed by the `overoverkill` advancement override below to unlock advancement parity for the custom-id mace. | `SYSTEMS.md` |
+| `resources/data/minecraft/advancement/adventure/ol_betsy.json` | Vanilla advancement override; swaps `criteria.shot_crossbow.conditions.item.items` to `#famspecial:counts_as_crossbow` so Fortune & Glory satisfies it. | `SYSTEMS.md` |
+| `resources/data/minecraft/advancement/adventure/arbalistic.json` | Vanilla advancement override; swaps `criteria.arbalistic.conditions.fired_from_weapon.items` to `#famspecial:counts_as_crossbow`. | `SYSTEMS.md` |
+| `resources/data/minecraft/advancement/adventure/two_birds_one_arrow.json` | Vanilla advancement override; swaps `criteria.two_birds.conditions.fired_from_weapon.items` to `#famspecial:counts_as_crossbow`. | `SYSTEMS.md` |
+| `resources/data/minecraft/advancement/adventure/whos_the_pillager_now.json` | Vanilla advancement override; swaps `criteria.kill_pillager.conditions.fired_from_weapon.items` to `#famspecial:counts_as_crossbow`. | `SYSTEMS.md` |
+| `resources/data/minecraft/advancement/adventure/overoverkill.json` | Vanilla advancement override; swaps `criteria.overoverkill.conditions.damage.type.direct_entity.equipment.mainhand.items` to `#famspecial:counts_as_mace` so Mjolnir satisfies it. | `SYSTEMS.md` |
+| `resources/data/minecraft/enchantment/riptide.json` | Vanilla Riptide override that swaps `supported_items` from `#minecraft:enchantable/trident` to `#famspecial:riptide_eligible` so Mjolnir can receive Riptide without also opting into Loyalty / Channeling. | `SYSTEMS.md` |
+| `resources/data/minecraft/enchantment/multishot.json` | Vanilla Multishot override that swaps `supported_items` from `#minecraft:enchantable/crossbow` to `#famspecial:multishot_eligible` so Fortune & Glory cannot receive Multishot while keeping it eligible for all other crossbow enchants. | `SYSTEMS.md` |
+| `resources/data/minecraft/tags/item/enchantable/durability.json` | Additive override (`replace: false`) adding `famspecial:mjolnir` and `famspecial:fortune_and_glory` so they accept Mending / Unbreaking / Curse of Vanishing. | `SYSTEMS.md` |
+| `resources/data/minecraft/tags/item/enchantable/crossbow.json` | Additive override adding `famspecial:fortune_and_glory` so it accepts Quick Charge / Multishot / Piercing. | `SYSTEMS.md` |
+| `resources/data/minecraft/tags/item/enchantable/mace.json` | Additive override adding `famspecial:mjolnir` so it accepts Density / Breach / Wind Burst. | `SYSTEMS.md` |
+| `resources/data/minecraft/tags/item/enchantable/weapon.json` | Additive override adding `famspecial:mjolnir` so it accepts Smite / Bane of Arthropods. Sharpness is intentionally NOT enabled — it gates on `enchantable/sharp_weapon`, which Mjolnir is deliberately left out of. | `SYSTEMS.md` |
+| `resources/data/minecraft/tags/item/enchantable/fire_aspect.json` | Additive override adding `famspecial:mjolnir` so it accepts Fire Aspect. | `SYSTEMS.md` |
 | `gradle.properties` | `mod_version` (filtered into `fabric.mod.json`). Bump for releases. | `CLAUDE.md` (Commands) |
