@@ -46,3 +46,4 @@ replay_*.log
 # decompiled vanilla sources (genSources spillage)
 
 /net/
+.scratch_vanilla/
