@@ -3,9 +3,13 @@ package github.rahularora375.famspecial.component;
 import com.mojang.serialization.Codec;
 import github.rahularora375.famspecial.FamSpecial;
 import net.minecraft.component.ComponentType;
+import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
+
+import java.util.List;
+import java.util.Set;
 
 public class ModComponents {
     public static final ComponentType<Boolean> GRANTS_NIGHT_VISION = Registry.register(
@@ -20,6 +24,17 @@ public class ModComponents {
             Registries.DATA_COMPONENT_TYPE,
             Identifier.of(FamSpecial.MOD_ID, "set_id"),
             ComponentType.<String>builder().codec(Codec.STRING).build()
+    );
+
+    // Generic identity marker stamped on every famspecial custom gear item.
+    // Provides a single boolean "is this one of ours?" check for consumers
+    // that don't care about the specific theme/slot — e.g. merge paths,
+    // tooltip filters, server-side validation. Carried across the anvil
+    // chestplate-to-elytra merge so the resulting elytra remains flagged.
+    public static final ComponentType<Boolean> IS_FAMSPECIAL_GEAR = Registry.register(
+            Registries.DATA_COMPONENT_TYPE,
+            Identifier.of(FamSpecial.MOD_ID, "is_famspecial_gear"),
+            ComponentType.<Boolean>builder().codec(Codec.BOOL).build()
     );
 
     // Marks a weapon as granting Strength I to its wielder while held at night
@@ -101,10 +116,11 @@ public class ModComponents {
             ComponentType.<Boolean>builder().codec(Codec.BOOL).build()
     );
 
-    // Mending-lockout flag. Blocks Mending from being applied to the stack
-    // via anvil (AnvilScreenHandlerMixin blanks the output if the sacrifice
-    // carries Mending) or enchanting table (EnchantmentHelperMixin filters
-    // Mending out of the possible-entries roll).
+    // Legacy Mending-lockout flag. Currently unused — no consumer reads it;
+    // the previous anvil and enchanting-table gates that enforced it have been
+    // removed. Still registered and still carried by copyModComponentsForElytra
+    // so the flag survives the chestplate→elytra merge for potential future
+    // use; kept in MOD_COMPONENTS_BASE for forward compatibility.
     public static final ComponentType<Boolean> BLOCKS_MENDING = Registry.register(
             Registries.DATA_COMPONENT_TYPE,
             Identifier.of(FamSpecial.MOD_ID, "blocks_mending"),
@@ -169,10 +185,10 @@ public class ModComponents {
             ComponentType.<Boolean>builder().codec(Codec.BOOL).build()
     );
 
-    // Helmet flag granting Bad Omen ("Ominous Potion effect") while worn
+    // Boots flag granting Bad Omen ("Ominous Potion effect") while worn
     // between 8 PM and 6 AM (timeOfDay >= 14000, or always in Nether/End).
-    // Applied by ArmorEffects driven by this flag on the HEAD slot. Lives on
-    // the Esh-Endra-Navesh helmet.
+    // Applied by ArmorEffects driven by this flag on the FEET slot. Lives on
+    // the Esh-Endra-Navesh boots (Dhoom Machale).
     public static final ComponentType<Boolean> GRANTS_OMINOUS = Registry.register(
             Registries.DATA_COMPONENT_TYPE,
             Identifier.of(FamSpecial.MOD_ID, "grants_ominous"),
@@ -192,12 +208,12 @@ public class ModComponents {
             ComponentType.<Boolean>builder().codec(Codec.BOOL).build()
     );
 
-    // Helmet flag granting SUNS_PROTECTION (Resistance I ~ 20% damage reduction
+    // Boots flag granting SUNS_PROTECTION (Resistance I ~ 20% damage reduction
     // via LivingEntityMixin's modifyAppliedDamage) while worn AND the player is
-    // in a DESERT biome. Applied by ArmorEffects, gated on the HEAD slot and
-    // the biome cache. Included in MOD_MANAGED: helmet removal is caught
+    // in a DESERT biome. Applied by ArmorEffects, gated on the FEET slot and
+    // the biome cache. Included in MOD_MANAGED: boots removal is caught
     // instantly by LivingEntityEquipMixin; biome leave drops the effect within
-    // one 4-s MOD_MANAGED diff pass. Lives on the Sun Emperor's Crown.
+    // one 4-s MOD_MANAGED diff pass. Lives on Drifting Sands (Shurima boots).
     public static final ComponentType<Boolean> GRANTS_SUNS_PROTECTION = Registry.register(
             Registries.DATA_COMPONENT_TYPE,
             Identifier.of(FamSpecial.MOD_ID, "grants_suns_protection"),
@@ -217,14 +233,14 @@ public class ModComponents {
             ComponentType.<Boolean>builder().codec(Codec.BOOL).build()
     );
 
-    // Helmet flag: on any kill the wearer performs, roll a flat 8% chance to
+    // Leggings flag: on any kill the wearer performs, roll a flat 8% chance to
     // start a thunderstorm — but ONLY when the world is not already thundering.
     // If a thunderstorm is already active the kill is ignored entirely (no roll,
-    // no cooldown burn). Per-player 2-day cooldown only starts on a successful
-    // trigger. Lives on Thunderhelm (the Thor helmet). Handled in ThorEffects
-    // via ServerLivingEntityEvents.AFTER_DEATH. Drives the cosmetic
+    // no cooldown burn). Per-player 1-day cooldown only starts on a successful
+    // trigger. Lives on Warrior's Greaves (the Thor leggings). Handled in
+    // ThorEffects via ServerLivingEntityEvents.AFTER_DEATH. Drives the cosmetic
     // STORMS_AWAKENING HUD badge (visible only when off cooldown) via
-    // ArmorEffects' storms_awakening_helmet_ready bonus.
+    // ArmorEffects' storms_awakening_legs_ready bonus.
     public static final ComponentType<Boolean> TRIGGERS_STORM_AWAKENING = Registry.register(
             Registries.DATA_COMPONENT_TYPE,
             Identifier.of(FamSpecial.MOD_ID, "triggers_storm_awakening"),
@@ -232,11 +248,11 @@ public class ModComponents {
     );
 
     // Per-stack Storm's Awakening cooldown: absolute world-tick at which the
-    // cooldown expires. Stamped on the worn Thunderhelm when Storm's Awakening
-    // triggers. Client reads this to render the MM:SS countdown in the helmet
-    // tooltip; server ignores it and keeps using its own per-UUID map. Stays
-    // stamped after the cooldown expires (the tooltip just hides once
-    // currentTime >= value). Mirrors NECROMANCER_COOLDOWN_END.
+    // cooldown expires. Stamped on the worn Warrior's Greaves when Storm's
+    // Awakening triggers. Client reads this to render the MM:SS countdown in
+    // the leggings tooltip; server ignores it and keeps using its own per-UUID
+    // map. Stays stamped after the cooldown expires (the tooltip just hides
+    // once currentTime >= value). Mirrors NECROMANCER_COOLDOWN_END.
     public static final ComponentType<Long> STORM_COOLDOWN_END = Registry.register(
             Registries.DATA_COMPONENT_TYPE,
             Identifier.of(FamSpecial.MOD_ID, "storm_cooldown_end"),
@@ -256,7 +272,97 @@ public class ModComponents {
             ComponentType.<Boolean>builder().codec(Codec.BOOL).build()
     );
 
+    // Leggings flag (Raider's Legacy "Trousers of the Trail"): drives a 5%
+    // chance for the wearer to drop a diamond when killing a mob with an
+    // arrow. Phase 2 wires this into the kill-event handler.
+    public static final ComponentType<Boolean> BOUNTY_HUNTER = Registry.register(
+            Registries.DATA_COMPONENT_TYPE,
+            Identifier.of(FamSpecial.MOD_ID, "bounty_hunter"),
+            ComponentType.<Boolean>builder().codec(Codec.BOOL).build()
+    );
+
+    // Crossbow flag (Raider's Legacy "Fortune & Glory"): drives the two-shot
+    // release behavior in FortuneGloryItem#onStoppedUsing and the cosmetic
+    // HUD badge. Phase 2 fills in the second-shot tick handler and the badge
+    // bonus in ArmorEffects.
+    public static final ComponentType<Boolean> CRUSADERS_VOLLEY = Registry.register(
+            Registries.DATA_COMPONENT_TYPE,
+            Identifier.of(FamSpecial.MOD_ID, "crusaders_volley"),
+            ComponentType.<Boolean>builder().codec(Codec.BOOL).build()
+    );
+
     public static void register() {
         FamSpecial.LOGGER.info("Registering components for {}", FamSpecial.MOD_ID);
+    }
+
+    // Shared source of truth for the set of custom famspecial ComponentTypes
+    // that transplant across stack merges. Consumed by copyModComponents.
+    // New ComponentTypes MUST be added here or they won't carry across any
+    // merge path.
+    private static final List<ComponentType<?>> MOD_COMPONENTS_BASE = List.of(
+            GRANTS_NIGHT_VISION,
+            SET_ID,
+            IS_FAMSPECIAL_GEAR,
+            NIGHT_STRENGTH,
+            HEALS_TARGET,
+            GRANTS_WATER_BREATHING,
+            GRANTS_MESSMERS_FLAME,
+            SHOWS_ENTITY_HP,
+            NO_LUNGE_HUNGER,
+            INDESTRUCTIBLE,
+            REGENS_DURABILITY,
+            BLOCKS_MENDING,
+            GRANTS_SHARDBEARING,
+            GRANTS_UNDEAD_RESISTANCE,
+            APPLIES_WITHER_ON_HIT,
+            NECROMANCER_COOLDOWN_END,
+            BONUS_DIAMOND_CHANCE,
+            GRANTS_OMINOUS,
+            IGNORES_KB_RESISTANCE,
+            GRANTS_SUNS_PROTECTION,
+            LIGHTNING_ON_HIT,
+            TRIGGERS_STORM_AWAKENING,
+            STORM_COOLDOWN_END,
+            THOR_MACE,
+            BOUNTY_HUNTER,
+            CRUSADERS_VOLLEY
+    );
+
+    // Flags intentionally NOT carried across a chestplate→elytra merge.
+    // INDESTRUCTIBLE is redundant on elytra (vanilla already stops damage at
+    // maxDamage-1) and would interact badly with the broken-state enchant-
+    // hiding mixins.
+    // BLOCKS_MENDING and REGENS_DURABILITY DO transfer — the merged elytra
+    // keeps the source theme's "no Mending, regen-managed" durability design.
+    private static final Set<ComponentType<?>> ELYTRA_EXCLUDED_COMPONENTS = Set.of(
+            INDESTRUCTIBLE
+    );
+
+    // General-purpose copy — carries every flag in MOD_COMPONENTS_BASE.
+    // Reserved for armor-to-armor transplant paths; not used by the current
+    // chestplate→elytra merge (see copyModComponentsForElytra).
+    public static void copyModComponents(ItemStack from, ItemStack to) {
+        for (ComponentType<?> type : MOD_COMPONENTS_BASE) {
+            copyOne(from, to, type);
+        }
+    }
+
+    // Elytra-specific variant used by AnvilScreenHandlerMixin's merge path.
+    // Skips the flags in ELYTRA_EXCLUDED_COMPONENTS — see that constant for
+    // rationale.
+    public static void copyModComponentsForElytra(ItemStack from, ItemStack to) {
+        for (ComponentType<?> type : MOD_COMPONENTS_BASE) {
+            if (ELYTRA_EXCLUDED_COMPONENTS.contains(type)) continue;
+            copyOne(from, to, type);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> void copyOne(ItemStack from, ItemStack to, ComponentType<?> type) {
+        ComponentType<T> typed = (ComponentType<T>) type;
+        T value = from.get(typed);
+        if (value != null) {
+            to.set(typed, value);
+        }
     }
 }

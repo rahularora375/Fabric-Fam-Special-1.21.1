@@ -89,11 +89,11 @@ public class ArmorEffects {
             // scroll / hotbar-key swap is handled by
             // ServerPlayNetworkHandlerMixin.
             ModStatusEffects.GOD_OF_THUNDER,
-            // Storm's Awakening (Thunderhelm ready-state badge): cosmetic HUD
-            // badge visible only while the helmet is worn AND the per-player
-            // ThorEffects storm cooldown is clear. Diff-removed one 4-second
-            // cycle after the helmet is unequipped or after the cooldown
-            // arms on a successful trigger.
+            // Storm's Awakening (Warrior's Greaves ready-state badge): cosmetic
+            // HUD badge visible only while the leggings are worn AND the
+            // per-player ThorEffects storm cooldown is clear. Diff-removed one
+            // 4-second cycle after the leggings are unequipped or after the
+            // cooldown arms on a successful trigger.
             ModStatusEffects.STORMS_AWAKENING,
             // Asgardian's Flight (Thor 5/5: 4 armor + Mjolnir mainhand): gates
             // Mjolnir's right-click riptide launch in MjolnirMaceItem. Event-
@@ -101,7 +101,10 @@ public class ArmorEffects {
             // ServerPlayNetworkHandlerMixin (hotbar swap); MOD_MANAGED here is
             // the 4-s-cycle safety net for inventory-drag/drop/item-break
             // paths that neither hook catches.
-            ModStatusEffects.ASGARDIANS_FLIGHT
+            ModStatusEffects.ASGARDIANS_FLIGHT,
+            ModStatusEffects.BOUNTY_HUNTER,
+            ModStatusEffects.TECHNOBLADE_NEVER_DIES,
+            ModStatusEffects.CRUSADERS_VOLLEY
     );
 
     private record Effect(RegistryEntry<StatusEffect> type, int amplifier) {}
@@ -289,13 +292,13 @@ public class ArmorEffects {
                     ctx -> Boolean.TRUE.equals(ctx.mainHand().get(ModComponents.APPLIES_WITHER_ON_HIT)),
                     new Effect(ModStatusEffects.WITHER_TOUCH, 0)),
 
-            // Esh-Endra-Navesh helmet (Time Dekhlo Helmet): Bad Omen while worn
+            // Esh-Endra-Navesh boots (Dhoom Machale): Bad Omen while worn
             // at night (6 PM → 6 AM) or anytime in Nether/End. Shares the
             // Mistborn/Obsidian Dagger night gate. Vanilla effect — left out of
             // MOD_MANAGED so ominous-bottle / beacon sources decay naturally
             // rather than getting stripped on unequip.
-            Bonus.effects("ominous_helmet",
-                    ctx -> Boolean.TRUE.equals(ctx.helmet().get(ModComponents.GRANTS_OMINOUS))
+            Bonus.effects("ominous_boots",
+                    ctx -> Boolean.TRUE.equals(ctx.boots().get(ModComponents.GRANTS_OMINOUS))
                             && (ctx.isNight() || ctx.inTimelessDimension()),
                     new Effect(StatusEffects.BAD_OMEN, 0)),
 
@@ -313,16 +316,16 @@ public class ArmorEffects {
                     ctx -> Boolean.TRUE.equals(ctx.mainHand().get(ModComponents.BONUS_DIAMOND_CHANCE)),
                     new Effect(ModStatusEffects.SHADI_BUFF, 0)),
 
-            // Sun's Protection (Shurima helmet + desert): applies the
-            // SUNS_PROTECTION effect while the helmet is worn AND the player
+            // Sun's Protection (Shurima boots + desert): applies the
+            // SUNS_PROTECTION effect while the boots are worn AND the player
             // is in BiomeKeys.DESERT. The actual 20% damage reduction lives in
             // LivingEntityMixin, gated on the effect's presence. Now in
-            // MOD_MANAGED: helmet removal is caught instantly by
+            // MOD_MANAGED: boots removal is caught instantly by
             // LivingEntityEquipMixin, biome leave is caught on the next 4-s
             // MOD_MANAGED diff pass — so the effect no longer outlives its
             // triggers by ~20 s of natural decay as in earlier versions.
-            Bonus.effects("suns_protection_helmet_desert",
-                    ctx -> Boolean.TRUE.equals(ctx.helmet().get(ModComponents.GRANTS_SUNS_PROTECTION))
+            Bonus.effects("suns_protection_boots_desert",
+                    ctx -> Boolean.TRUE.equals(ctx.boots().get(ModComponents.GRANTS_SUNS_PROTECTION))
                             && ctx.inDesert(),
                     new Effect(ModStatusEffects.SUNS_PROTECTION, 0)),
 
@@ -346,16 +349,17 @@ public class ArmorEffects {
                     ctx -> Boolean.TRUE.equals(ctx.mainHand().get(ModComponents.LIGHTNING_ON_HIT)),
                     new Effect(ModStatusEffects.GOD_OF_THUNDER, 0)),
 
-            // Storm's Awakening (Thunderhelm ready state): HUD badge visible
-            // only while the helmet is worn AND the per-player storm cooldown
-            // is clear. Cosmetic — advertises "ability is armed, next kill may
-            // summon the storm." Disappears during the 48000-tick (2 Minecraft
-            // days) cooldown window that follows a successful trigger, then
-            // re-appears once cleared. ThorEffects.isStormCooldown is the
-            // single source of truth for the cooldown state; this bonus's
-            // trigger queries it live so badge + gameplay can't drift.
-            Bonus.effects("storms_awakening_helmet_ready",
-                    ctx -> Boolean.TRUE.equals(ctx.helmet().get(ModComponents.TRIGGERS_STORM_AWAKENING))
+            // Storm's Awakening (Warrior's Greaves ready state): HUD badge
+            // visible only while the leggings are worn AND the per-player
+            // storm cooldown is clear. Cosmetic — advertises "ability is
+            // armed, next kill may summon the storm." Disappears during the
+            // 24000-tick (1 Minecraft day) cooldown window that follows a
+            // successful trigger, then re-appears once cleared.
+            // ThorEffects.isStormCooldown is the single source of truth for
+            // the cooldown state; this bonus's trigger queries it live so
+            // badge + gameplay can't drift.
+            Bonus.effects("storms_awakening_legs_ready",
+                    ctx -> Boolean.TRUE.equals(ctx.legs().get(ModComponents.TRIGGERS_STORM_AWAKENING))
                             && !ThorEffects.isStormCooldown(ctx.player(),
                                     ctx.player().getEntityWorld().getTime()),
                     new Effect(ModStatusEffects.STORMS_AWAKENING, 0)),
@@ -370,7 +374,19 @@ public class ArmorEffects {
             Bonus.effects("asgardians_flight_full_thor_set_and_mjolnir",
                     ctx -> ctx.hasFullSet("thor")
                             && Boolean.TRUE.equals(ctx.mainHand().get(ModComponents.THOR_MACE)),
-                    new Effect(ModStatusEffects.ASGARDIANS_FLIGHT, 0))
+                    new Effect(ModStatusEffects.ASGARDIANS_FLIGHT, 0)),
+
+            Bonus.effects("bounty_hunter_legs",
+                    ctx -> Boolean.TRUE.equals(ctx.legs().get(ModComponents.BOUNTY_HUNTER)),
+                    new Effect(ModStatusEffects.BOUNTY_HUNTER, 0)),
+
+            Bonus.effects("technoblade_never_dies_full_set",
+                    ctx -> ctx.hasFullSet("raider"),
+                    new Effect(ModStatusEffects.TECHNOBLADE_NEVER_DIES, 0)),
+
+            Bonus.effects("crusaders_volley_mainhand",
+                    ctx -> Boolean.TRUE.equals(ctx.mainHand().get(ModComponents.CRUSADERS_VOLLEY)),
+                    new Effect(ModStatusEffects.CRUSADERS_VOLLEY, 0))
     );
 
     // Shuriman Endurance is applied once for ~4 minutes (4800 ticks) and only
@@ -467,11 +483,16 @@ public class ArmorEffects {
                 boolean showParticles = effect.type() != ModStatusEffects.ROTTEN_MUSCLE
                         && effect.type() != ModStatusEffects.WITHER_TOUCH
                         && effect.type() != ModStatusEffects.SAGES_GRACE;
+                // Radiant Might rides the ambient flag so vanilla throttles
+                // its swirl to ~25% of the standard rate — the effect has no
+                // custom particle override of its own, so the ambient flag is
+                // the only knob for trimming its visual output.
+                boolean ambient = effect.type() == ModStatusEffects.RADIANT_MIGHT;
                 player.addStatusEffect(new StatusEffectInstance(
                         effect.type(),
                         EFFECT_DURATION_TICKS,
                         effect.amplifier(),
-                        false,  // not ambient
+                        ambient,
                         showParticles,
                         true    // show icon
                 ));

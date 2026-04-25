@@ -161,9 +161,9 @@ public class ModStatusEffects {
             new StatusEffect(StatusEffectCategory.BENEFICIAL, 0xA0D2FF) {
                 @Override
                 public boolean canApplyUpdateEffect(int duration, int amplifier) {
-                    // Throttle — spawn particles every 8 ticks (~2.5 times/second)
+                    // Throttle — spawn particles every 14 ticks (~1.4 times/second)
                     // for a slow, breath-like cadence rather than a steady stream.
-                    return duration % 8 == 0;
+                    return duration % 14 == 0;
                 }
 
                 @Override
@@ -171,13 +171,13 @@ public class ModStatusEffects {
                     // Lore-accurate Stormlight: faint glowing white wisps drifting
                     // off the wearer like breath in cold air. Snowflake particles
                     // are small, pale, and drift gently — the subtlest "radiant
-                    // mist" option vanilla offers. Count stays low (2 per burst)
+                    // mist" option vanilla offers. Count stays low (1 per burst)
                     // and the upward drift speed is near zero so they hang in
                     // place rather than streaming visibly.
                     double x = entity.getX();
                     double y = entity.getY() + entity.getHeight() * 0.5;
                     double z = entity.getZ();
-                    world.spawnParticles(ParticleTypes.SNOWFLAKE, x, y, z, 2, 0.25, 0.4, 0.25, 0.005);
+                    world.spawnParticles(ParticleTypes.SNOWFLAKE, x, y, z, 1, 0.25, 0.4, 0.25, 0.005);
                     return true;
                 }
             }
@@ -378,12 +378,12 @@ public class ModStatusEffects {
             new StatusEffect(StatusEffectCategory.BENEFICIAL, 0x60C8FF) {}
     );
 
-    // Storm's Awakening: cosmetic HUD badge for Thunderhelm. Advertises the
-    // ready-to-fire state of the thunderstorm kill-trigger — applied by
-    // ArmorEffects' storms_awakening_helmet_ready bonus only while the helmet
-    // is worn AND the per-player cooldown (ThorEffects.isStormCooldown) has
+    // Storm's Awakening: cosmetic HUD badge for Warrior's Greaves. Advertises
+    // the ready-to-fire state of the thunderstorm kill-trigger — applied by
+    // ArmorEffects' storms_awakening_legs_ready bonus only while the leggings
+    // are worn AND the per-player cooldown (ThorEffects.isStormCooldown) has
     // elapsed. Pops visible when the ability is armed, disappears during the
-    // 48000-tick (2 Minecraft days) cooldown window that follows a successful
+    // 24000-tick (1 Minecraft day) cooldown window that follows a successful
     // trigger, then re-appears once cleared. Color 0x6858B8 matches the Thor
     // LORE_BASE palette (deep storm purple). Icon at
     // assets/famspecial/textures/mob_effect/storms_awakening.png is a copy of
@@ -411,6 +411,35 @@ public class ModStatusEffects {
             Registries.STATUS_EFFECT,
             Identifier.of(FamSpecial.MOD_ID, "asgardians_flight"),
             new StatusEffect(StatusEffectCategory.BENEFICIAL, 0x60C8FF) {}
+    );
+
+    // Bounty Hunter: Raider's Legacy "Trousers of the Trail" HUD badge.
+    // Advertises the 5%-on-arrow-kill diamond-drop mechanic, which Phase 2
+    // wires up against the BOUNTY_HUNTER leggings flag. Color matches the
+    // Raider LORE_BASE palette (whip brown).
+    public static final RegistryEntry<StatusEffect> BOUNTY_HUNTER = Registry.registerReference(
+            Registries.STATUS_EFFECT,
+            Identifier.of(FamSpecial.MOD_ID, "bounty_hunter"),
+            new StatusEffect(StatusEffectCategory.BENEFICIAL, 0xA47449) {}
+    );
+
+    // Technoblade Never Dies: Raider's Legacy 4/4 set bonus HUD badge. Color
+    // matches the Raider LORE_ACCENT palette (idol gold). Phase 2 wires the
+    // gameplay (set-bonus payoff) against the 4/4 set gate.
+    public static final RegistryEntry<StatusEffect> TECHNOBLADE_NEVER_DIES = Registry.registerReference(
+            Registries.STATUS_EFFECT,
+            Identifier.of(FamSpecial.MOD_ID, "technoblade_never_dies"),
+            new StatusEffect(StatusEffectCategory.BENEFICIAL, 0xF4C430) {}
+    );
+
+    // Crusader's Volley: Raider's Legacy "Fortune & Glory" crossbow HUD badge.
+    // Advertises the two-shot release behavior driven by the CRUSADERS_VOLLEY
+    // flag on the held crossbow. Color matches the Raider NAME_PREFIX palette
+    // (fedora tan).
+    public static final RegistryEntry<StatusEffect> CRUSADERS_VOLLEY = Registry.registerReference(
+            Registries.STATUS_EFFECT,
+            Identifier.of(FamSpecial.MOD_ID, "crusaders_volley"),
+            new StatusEffect(StatusEffectCategory.BENEFICIAL, 0xC19A6B) {}
     );
 
     public static void register() {

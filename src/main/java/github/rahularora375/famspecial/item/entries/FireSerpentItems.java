@@ -72,17 +72,30 @@ public final class FireSerpentItems {
     }
 
     public static void addWeapons(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // Theme-adjacent — no SET_ID, so it doesn't count toward 4/4.
-        // Fire Serpent's Wrath: DIAMOND_SPEAR base — vanilla 1.21.11 ships a
-        // full spear tier family (Items.DIAMOND_SPEAR, tagged #minecraft:spears)
-        // with its own animation scale and the Lunge 3 (vanilla max) enchant
-        // gated to that tag. Fire Aspect 2 (vanilla max) applies via the
-        // broader #minecraft:enchantable/melee_weapon tree. Mending keeps it
-        // repairable. No Sharpness/Looting/Unbreaking — the spear leans on
-        // Lunge's dash + Fire Aspect's burn + the set's Messmer's Venom tick
-        // for its damage profile, not raw bonus damage. Messmer's Venom is a
-        // 4/4 set bonus applied per-hit by AttackHandlers, so the spear
-        // poisons only while the full set is worn.
+        entries.add(buildFireSerpentsWrath(enchants));
+    }
+
+    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
+
+    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
+        entries.add(buildImpalersCrown(enchants));
+        entries.add(buildSerpentsEmbrace(enchants));
+        entries.add(buildKindlingsWrap(enchants));
+        entries.add(buildKindlingsPath(enchants));
+    }
+
+    // Theme-adjacent — no SET_ID, so it doesn't count toward 4/4.
+    // Fire Serpent's Wrath: DIAMOND_SPEAR base — vanilla 1.21.11 ships a
+    // full spear tier family (Items.DIAMOND_SPEAR, tagged #minecraft:spears)
+    // with its own animation scale and the Lunge 3 (vanilla max) enchant
+    // gated to that tag. Fire Aspect 2 (vanilla max) applies via the
+    // broader #minecraft:enchantable/melee_weapon tree. Mending keeps it
+    // repairable. No Sharpness/Looting/Unbreaking — the spear leans on
+    // Lunge's dash + Fire Aspect's burn + the set's Messmer's Venom tick
+    // for its damage profile, not raw bonus damage. Messmer's Venom is a
+    // 4/4 set bonus applied per-hit by AttackHandlers, so the spear
+    // poisons only while the full set is worn.
+    public static ItemStack buildFireSerpentsWrath(RegistryWrapper<Enchantment> enchants) {
         ItemStack fireSerpentsWrath = ModItemGroups.buildItem(Items.DIAMOND_SPEAR,
                 twoTone("Fire Serpent's", "Wrath"),
                 List.of(Text.literal("Those stripped of the Grace of Gold").setStyle(LORE_BASE),
@@ -97,16 +110,14 @@ public final class FireSerpentItems {
         // Suppresses Lunge's post-piercing-attack exhaustion tick so dashing
         // doesn't eat hunger. Enforced by ApplyExhaustionEnchantmentEffectMixin.
         fireSerpentsWrath.set(ModComponents.NO_LUNGE_HUNGER, true);
-        entries.add(fireSerpentsWrath);
+        return fireSerpentsWrath;
     }
 
-    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
-
-    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // All four pieces tagged SET_ID="fire_serpent".
-        // 4/4 set bonus is Messmer's Flame Aegis — 80% fire damage reduction (like
-        // Fire Protection, not Fire Resistance). Applied by ArmorEffects and
-        // enforced by LivingEntityMixin.
+    // All four pieces tagged SET_ID="fire_serpent".
+    // 4/4 set bonus is Messmer's Flame Aegis — 80% fire damage reduction (like
+    // Fire Protection, not Fire Resistance). Applied by ArmorEffects and
+    // enforced by LivingEntityMixin.
+    public static ItemStack buildImpalersCrown(RegistryWrapper<Enchantment> enchants) {
         ItemStack impalersCrown = ModItemGroups.buildItem(Items.DIAMOND_HELMET,
                 twoTone("Impaler's", "Crown"),
                 List.of(Text.literal("Mother, wouldst thou truly Lordship sanction").setStyle(LORE_BASE),
@@ -114,8 +125,10 @@ public final class FireSerpentItems {
                 enchants);
         impalersCrown.set(ModComponents.SET_ID, "fire_serpent");
         impalersCrown.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, HEAD_MODIFIERS);
-        entries.add(impalersCrown);
+        return impalersCrown;
+    }
 
+    public static ItemStack buildSerpentsEmbrace(RegistryWrapper<Enchantment> enchants) {
         ItemStack serpentsEmbrace = ModItemGroups.buildItem(Items.DIAMOND_CHESTPLATE,
                 twoTone("Serpent's", "Embrace"),
                 List.of(Text.literal("Soon, Tarnished").setStyle(LORE_BASE),
@@ -125,8 +138,10 @@ public final class FireSerpentItems {
         serpentsEmbrace.set(ModComponents.SET_ID, "fire_serpent");
         serpentsEmbrace.set(ModComponents.GRANTS_MESSMERS_FLAME, true);
         serpentsEmbrace.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, CHEST_MODIFIERS);
-        entries.add(serpentsEmbrace);
+        return serpentsEmbrace;
+    }
 
+    public static ItemStack buildKindlingsWrap(RegistryWrapper<Enchantment> enchants) {
         ItemStack kindlingsWrap = ModItemGroups.buildItem(Items.DIAMOND_LEGGINGS,
                 twoTone("Kindling's", "Wrap"),
                 List.of(ModItemGroups.loreLine(LORE_BASE,
@@ -135,14 +150,16 @@ public final class FireSerpentItems {
                 enchants);
         kindlingsWrap.set(ModComponents.SET_ID, "fire_serpent");
         kindlingsWrap.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, LEGS_MODIFIERS);
-        entries.add(kindlingsWrap);
+        return kindlingsWrap;
+    }
 
+    public static ItemStack buildKindlingsPath(RegistryWrapper<Enchantment> enchants) {
         ItemStack kindlingsPath = ModItemGroups.buildItem(Items.DIAMOND_BOOTS,
                 twoTone("Kindling's", "Path"),
                 List.of(Text.literal("Yet my purpose standeth unchanged").setStyle(LORE_BASE)),
                 enchants);
         kindlingsPath.set(ModComponents.SET_ID, "fire_serpent");
         kindlingsPath.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, FEET_MODIFIERS);
-        entries.add(kindlingsPath);
+        return kindlingsPath;
     }
 }

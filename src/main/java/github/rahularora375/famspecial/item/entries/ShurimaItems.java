@@ -92,12 +92,25 @@ public final class ShurimaItems {
     }
 
     public static void addWeapons(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // Sun Disc Spear: theme-adjacent — no SET_ID. Built on DIAMOND_SPEAR
-        // (matches FireSerpent precedent). Fixed enchants: Knockback 5 (max)
-        // + Sharpness 6. Carries IGNORES_KB_RESISTANCE so the per-tick
-        // fast-path in ArmorEffects applies EMPERORS_DIVIDE while the spear
-        // is in the main hand — LivingEntityKnockbackMixin reads that effect
-        // off the attacker to zero out the victim's KB resistance.
+        entries.add(buildSunDiscSpear(enchants));
+    }
+
+    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
+
+    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
+        entries.add(buildSunEmperorsCrown(enchants));
+        entries.add(buildMantleOfShurima(enchants));
+        entries.add(buildSandstriderWraps(enchants));
+        entries.add(buildDriftingSands(enchants));
+    }
+
+    // Sun Disc Spear: theme-adjacent — no SET_ID. Built on DIAMOND_SPEAR
+    // (matches FireSerpent precedent). Fixed enchants: Knockback 5 (max)
+    // + Sharpness 6. Carries IGNORES_KB_RESISTANCE so the per-tick
+    // fast-path in ArmorEffects applies EMPERORS_DIVIDE while the spear
+    // is in the main hand — LivingEntityKnockbackMixin reads that effect
+    // off the attacker to zero out the victim's KB resistance.
+    public static ItemStack buildSunDiscSpear(RegistryWrapper<Enchantment> enchants) {
         ItemStack sunDiscSpear = ModItemGroups.buildItem(Items.DIAMOND_SPEAR,
                 twoTone("Sun Disc", "Spear"),
                 List.of(Text.literal("You dare raise arms").setStyle(LORE_BASE),
@@ -106,26 +119,25 @@ public final class ShurimaItems {
                 ModItemGroups.e(Enchantments.KNOCKBACK, 5),
                 ModItemGroups.e(Enchantments.SHARPNESS, 6));
         sunDiscSpear.set(ModComponents.IGNORES_KB_RESISTANCE, true);
-        entries.add(sunDiscSpear);
+        return sunDiscSpear;
     }
 
-    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
-
-    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // All four pieces tagged SET_ID="shurima". Full-set bonus is
-        // Shuriman Endurance (desert-gated, apply-once 4-minute duration).
-        // The helmet additionally carries GRANTS_SUNS_PROTECTION — the
-        // piece-alone + desert-gated Resistance I.
+    // All four pieces tagged SET_ID="shurima". Full-set bonus is
+    // Shuriman Endurance (desert-gated, apply-once 4-minute duration).
+    // The boots additionally carry GRANTS_SUNS_PROTECTION — the
+    // piece-alone + desert-gated Resistance I.
+    public static ItemStack buildSunEmperorsCrown(RegistryWrapper<Enchantment> enchants) {
         ItemStack sunEmperorsCrown = ModItemGroups.buildItem(Items.DIAMOND_HELMET,
                 twoTone("Sun Emperor's", "Crown"),
                 List.of(Text.literal("I am the emperor of Shurima").setStyle(LORE_BASE),
                         Text.literal("I do not kneel").setStyle(LORE_BASE)),
                 enchants);
         sunEmperorsCrown.set(ModComponents.SET_ID, "shurima");
-        sunEmperorsCrown.set(ModComponents.GRANTS_SUNS_PROTECTION, true);
         sunEmperorsCrown.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, HEAD_MODIFIERS);
-        entries.add(sunEmperorsCrown);
+        return sunEmperorsCrown;
+    }
 
+    public static ItemStack buildMantleOfShurima(RegistryWrapper<Enchantment> enchants) {
         ItemStack mantleOfShurima = ModItemGroups.buildItem(Items.DIAMOND_CHESTPLATE,
                 twoTone("Mantle of", "Shurima"),
                 List.of(Text.literal("Shurima will rise again").setStyle(LORE_BASE),
@@ -133,8 +145,10 @@ public final class ShurimaItems {
                 enchants);
         mantleOfShurima.set(ModComponents.SET_ID, "shurima");
         mantleOfShurima.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, CHEST_MODIFIERS);
-        entries.add(mantleOfShurima);
+        return mantleOfShurima;
+    }
 
+    public static ItemStack buildSandstriderWraps(RegistryWrapper<Enchantment> enchants) {
         ItemStack sandstriderWraps = ModItemGroups.buildItem(Items.DIAMOND_LEGGINGS,
                 twoTone("Sandstrider", "Wraps"),
                 List.of(Text.literal("I have crossed the sands of eternity").setStyle(LORE_BASE),
@@ -142,15 +156,18 @@ public final class ShurimaItems {
                 enchants);
         sandstriderWraps.set(ModComponents.SET_ID, "shurima");
         sandstriderWraps.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, LEGS_MODIFIERS);
-        entries.add(sandstriderWraps);
+        return sandstriderWraps;
+    }
 
+    public static ItemStack buildDriftingSands(RegistryWrapper<Enchantment> enchants) {
         ItemStack driftingSands = ModItemGroups.buildItem(Items.DIAMOND_BOOTS,
                 twoTone("Drifting", "Sands"),
                 List.of(Text.literal("I walked these roads").setStyle(LORE_BASE),
                         Text.literal("before your fathers' fathers were born").setStyle(LORE_BASE)),
                 enchants);
         driftingSands.set(ModComponents.SET_ID, "shurima");
+        driftingSands.set(ModComponents.GRANTS_SUNS_PROTECTION, true);
         driftingSands.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, FEET_MODIFIERS);
-        entries.add(driftingSands);
+        return driftingSands;
     }
 }

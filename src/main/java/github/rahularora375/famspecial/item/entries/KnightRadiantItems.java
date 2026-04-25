@@ -65,12 +65,25 @@ public final class KnightRadiantItems {
     }
 
     public static void addWeapons(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // Oathbringer is theme-adjacent — no SET_ID, no enchants, no attribute
-        // overrides in this pass. Single-word name rendered in NAME_PIECE only.
-        // Carries GRANTS_SHARDBEARING so the wearer's melee hits chip an extra
-        // 5% of the target's current HP past all mitigation (LivingEntityMixin)
-        // and the cosmetic Shardbearing HUD badge shows up top-right
-        // (ArmorEffects' shardbearing_mainhand).
+        entries.add(buildOathbringer(enchants));
+    }
+
+    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
+
+    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
+        entries.add(buildShardHelmet(enchants));
+        entries.add(buildShardPlate(enchants));
+        entries.add(buildShardLeggings(enchants));
+        entries.add(buildShardBoots(enchants));
+    }
+
+    // Oathbringer is theme-adjacent — no SET_ID, no enchants, no attribute
+    // overrides in this pass. Single-word name rendered in NAME_PIECE only.
+    // Carries GRANTS_SHARDBEARING so the wearer's melee hits chip an extra
+    // 5% of the target's current HP past all mitigation (LivingEntityMixin)
+    // and the cosmetic Shardbearing HUD badge shows up top-right
+    // (ArmorEffects' shardbearing_mainhand).
+    public static ItemStack buildOathbringer(RegistryWrapper<Enchantment> enchants) {
         ItemStack oathbringer = ModItemGroups.buildItem(Items.DIAMOND_SWORD,
                 Text.literal("Oathbringer").setStyle(NAME_PIECE),
                 List.of(Text.literal("What is a man's life worth?..").setStyle(LORE_BASE),
@@ -78,14 +91,12 @@ public final class KnightRadiantItems {
                         Text.literal("of a Shard blade").setStyle(LORE_BASE)),
                 enchants);
         oathbringer.set(ModComponents.GRANTS_SHARDBEARING, true);
-        entries.add(oathbringer);
+        return oathbringer;
     }
 
-    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
-
-    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // All four pieces tagged SET_ID="knight_radiant". No set bonus wired
-        // in this pass — SET_ID is forward-compatible scaffolding.
+    // All four pieces tagged SET_ID="knight_radiant". No set bonus wired
+    // in this pass — SET_ID is forward-compatible scaffolding.
+    public static ItemStack buildShardHelmet(RegistryWrapper<Enchantment> enchants) {
         ItemStack shardHelmet = ModItemGroups.buildItem(Items.DIAMOND_HELMET,
                 twoTone("Shard", "Helmet"),
                 List.of(Text.literal("A man's emotions are what define him").setStyle(LORE_BASE),
@@ -96,8 +107,10 @@ public final class KnightRadiantItems {
         shardHelmet.set(ModComponents.REGENS_DURABILITY, true);
         shardHelmet.set(ModComponents.BLOCKS_MENDING, true);
         shardHelmet.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, HELMET_MODIFIERS);
-        entries.add(shardHelmet);
+        return shardHelmet;
+    }
 
+    public static ItemStack buildShardPlate(RegistryWrapper<Enchantment> enchants) {
         ItemStack shardPlate = ModItemGroups.buildItem(Items.DIAMOND_CHESTPLATE,
                 twoTone("Shard", "Plate"),
                 List.of(Text.literal("If I must fall, I'll rise each time a better man").setStyle(LORE_BASE)),
@@ -107,8 +120,10 @@ public final class KnightRadiantItems {
         shardPlate.set(ModComponents.REGENS_DURABILITY, true);
         shardPlate.set(ModComponents.BLOCKS_MENDING, true);
         shardPlate.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, PLATE_MODIFIERS);
-        entries.add(shardPlate);
+        return shardPlate;
+    }
 
+    public static ItemStack buildShardLeggings(RegistryWrapper<Enchantment> enchants) {
         ItemStack shardLeggings = ModItemGroups.buildItem(Items.DIAMOND_LEGGINGS,
                 twoTone("Shard", "Leggings"),
                 List.of(Text.literal("Sometimes a hypocrite is just a man").setStyle(LORE_BASE),
@@ -119,8 +134,10 @@ public final class KnightRadiantItems {
         shardLeggings.set(ModComponents.REGENS_DURABILITY, true);
         shardLeggings.set(ModComponents.BLOCKS_MENDING, true);
         shardLeggings.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, LEGGINGS_MODIFIERS);
-        entries.add(shardLeggings);
+        return shardLeggings;
+    }
 
+    public static ItemStack buildShardBoots(RegistryWrapper<Enchantment> enchants) {
         ItemStack shardBoots = ModItemGroups.buildItem(Items.DIAMOND_BOOTS,
                 twoTone("Shard", "Boots"),
                 List.of(Text.literal("A journey will have pain and failure").setStyle(LORE_BASE),
@@ -133,6 +150,6 @@ public final class KnightRadiantItems {
         shardBoots.set(ModComponents.REGENS_DURABILITY, true);
         shardBoots.set(ModComponents.BLOCKS_MENDING, true);
         shardBoots.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, BOOTS_MODIFIERS);
-        entries.add(shardBoots);
+        return shardBoots;
     }
 }

@@ -65,27 +65,38 @@ public final class PoseidonItems {
     }
 
     public static void addWeapons(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // Riptide V is over vanilla cap (max 3) — matches this mod's convention
-        // of exceeding vanilla enchantment ceilings (Sharpness 7, Power 7, etc).
-        // No Mending by design — pairs with Unbreaking 4 for a finite-but-long-
-        // lived trident.
-        entries.add(ModItemGroups.buildItem(Items.TRIDENT,
+        entries.add(buildTridentOfOlympus(enchants));
+    }
+
+    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
+
+    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
+        entries.add(buildLorelaisCrown(enchants));
+        entries.add(buildIronbornPlate(enchants));
+        entries.add(buildHighstormsBind(enchants));
+        entries.add(buildPhinnsTrudge(enchants));
+    }
+
+    // Riptide V is over vanilla cap (max 3) — matches this mod's convention
+    // of exceeding vanilla enchantment ceilings (Sharpness 7, Power 7, etc).
+    // No Mending by design — pairs with Unbreaking 4 for a finite-but-long-
+    // lived trident.
+    public static ItemStack buildTridentOfOlympus(RegistryWrapper<Enchantment> enchants) {
+        return ModItemGroups.buildItem(Items.TRIDENT,
                 twoTone("Trident of", "Olympus"),
                 List.of(Text.literal("I regret many things").setStyle(LORE_BASE),
                         Text.literal("Killing you will not be one of them").setStyle(LORE_BASE)),
                 enchants,
                 ModItemGroups.e(Enchantments.UNBREAKING, 4),
                 ModItemGroups.e(Enchantments.RIPTIDE, 5),
-                ModItemGroups.e(Enchantments.IMPALING, 5)));
+                ModItemGroups.e(Enchantments.IMPALING, 5));
     }
 
-    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
-
-    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // All four pieces are tagged SET_ID="poseidon". Full-set bonus is
-        // "Riptide works anywhere" (no water/rain requirement), enforced by
-        // TridentItemMixin redirecting the vanilla water check when the
-        // wearer has all four equipped.
+    // All four pieces are tagged SET_ID="poseidon". Full-set bonus is
+    // "Riptide works anywhere" (no water/rain requirement), enforced by
+    // TridentItemMixin redirecting the vanilla water check when the
+    // wearer has all four equipped.
+    public static ItemStack buildLorelaisCrown(RegistryWrapper<Enchantment> enchants) {
         ItemStack lorelaiCrown = ModItemGroups.buildItem(Items.DIAMOND_HELMET,
                 twoTone("Lorelai's", "Crown"),
                 List.of(Text.literal("Underwater there were no sweet things").setStyle(LORE_BASE),
@@ -96,16 +107,20 @@ public final class PoseidonItems {
         // while the helmet is worn — independent of set completion.
         lorelaiCrown.set(ModComponents.GRANTS_WATER_BREATHING, true);
         lorelaiCrown.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, CROWN_MODIFIERS);
-        entries.add(lorelaiCrown);
+        return lorelaiCrown;
+    }
 
+    public static ItemStack buildIronbornPlate(RegistryWrapper<Enchantment> enchants) {
         ItemStack ironbornPlate = ModItemGroups.buildItem(Items.DIAMOND_CHESTPLATE,
                 twoTone("Ironborn", "Plate"),
                 List.of(Text.literal("What is dead may never die").setStyle(LORE_BASE)),
                 enchants);
         ironbornPlate.set(ModComponents.SET_ID, "poseidon");
         ironbornPlate.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, PLATE_MODIFIERS);
-        entries.add(ironbornPlate);
+        return ironbornPlate;
+    }
 
+    public static ItemStack buildHighstormsBind(RegistryWrapper<Enchantment> enchants) {
         ItemStack highstormBind = ModItemGroups.buildItem(Items.DIAMOND_LEGGINGS,
                 twoTone("Highstorm's", "Bind"),
                 List.of(ModItemGroups.loreLine(LORE_BASE,
@@ -117,8 +132,10 @@ public final class PoseidonItems {
                 enchants);
         highstormBind.set(ModComponents.SET_ID, "poseidon");
         highstormBind.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, BIND_MODIFIERS);
-        entries.add(highstormBind);
+        return highstormBind;
+    }
 
+    public static ItemStack buildPhinnsTrudge(RegistryWrapper<Enchantment> enchants) {
         ItemStack phinnTrudge = ModItemGroups.buildItem(Items.DIAMOND_BOOTS,
                 twoTone("Phinn's", "Trudge"),
                 List.of(Text.literal("Pardon me, excuse me, pardon").setStyle(LORE_BASE)),
@@ -126,6 +143,6 @@ public final class PoseidonItems {
                 ModItemGroups.e(Enchantments.FEATHER_FALLING, 4));
         phinnTrudge.set(ModComponents.SET_ID, "poseidon");
         phinnTrudge.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, TRUDGE_MODIFIERS);
-        entries.add(phinnTrudge);
+        return phinnTrudge;
     }
 }

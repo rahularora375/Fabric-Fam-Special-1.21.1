@@ -3,14 +3,18 @@ package github.rahularora375.famspecial.item;
 import github.rahularora375.famspecial.component.ModComponents;
 import github.rahularora375.famspecial.effect.ModStatusEffects;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.item.MaceItem;
 import net.minecraft.item.consume.UseAction;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.stat.Stats;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
@@ -85,6 +89,12 @@ public class MjolnirMaceItem extends MaceItem {
         // spin duration. Client cooldown mirrors via packet on next tick.
         if (!world.isClient()) {
             player.getItemCooldownManager().set(stack, RIPTIDE_SPIN_TICKS);
+        }
+        if (!world.isClient()) {
+            stack.damage(1, player, EquipmentSlot.MAINHAND);
+        }
+        if (player instanceof ServerPlayerEntity sp) {
+            sp.incrementStat(Stats.USED.getOrCreateStat(Items.MACE));
         }
         return true;
     }

@@ -2,14 +2,19 @@ package github.rahularora375.famspecial;
 
 import github.rahularora375.famspecial.component.ModComponents;
 import github.rahularora375.famspecial.effect.ModStatusEffects;
+import github.rahularora375.famspecial.entity.ModEntities;
 import github.rahularora375.famspecial.item.ArmorEffects;
 import github.rahularora375.famspecial.item.AttackHandlers;
 import github.rahularora375.famspecial.item.BlockBreakHandler;
+import github.rahularora375.famspecial.item.BountyHunterKills;
+import github.rahularora375.famspecial.item.FortuneGloryItem;
 import github.rahularora375.famspecial.item.ModItemGroups;
 import github.rahularora375.famspecial.item.NecromancerSummon;
 import github.rahularora375.famspecial.item.ThorEffects;
+import github.rahularora375.famspecial.item.entries.RaidersLegacyItems;
 import github.rahularora375.famspecial.item.entries.ThorItems;
 import github.rahularora375.famspecial.loot.ModLootTableModifier;
+import github.rahularora375.famspecial.loot.PrebuiltStackEntry;
 import github.rahularora375.famspecial.net.VersionHandshake;
 import github.rahularora375.famspecial.sound.ModSounds;
 import net.fabricmc.api.ModInitializer;
@@ -32,16 +37,21 @@ public class FamSpecial implements ModInitializer {
 		ModComponents.register();
 		ModStatusEffects.register();
 		ModSounds.register();
+		ModEntities.register();
 		// Must run before ModItemGroups so MJOLNIR is a live, registered Item
 		// by the time the Gear tab's entries lambda enumerates it. Registering
 		// an Item subclass at class-load (static-final init) crashes in 1.21+
 		// because SimpleRegistry rejects intrusive holders — see ThorItems.
 		ThorItems.register();
+		RaidersLegacyItems.register();
 		ModItemGroups.registerItemGroups();
+		PrebuiltStackEntry.register();
 		ModLootTableModifier.register();
 		ArmorEffects.register();
 		AttackHandlers.register();
 		BlockBreakHandler.register();
+		BountyHunterKills.register();
+		FortuneGloryItem.registerTickHandler();
 		NecromancerSummon.register();
 		ThorEffects.register();
 		VersionHandshake.registerServer();

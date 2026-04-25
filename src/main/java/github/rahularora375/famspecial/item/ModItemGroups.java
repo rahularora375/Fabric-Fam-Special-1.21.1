@@ -1,6 +1,7 @@
 package github.rahularora375.famspecial.item;
 
 import github.rahularora375.famspecial.FamSpecial;
+import github.rahularora375.famspecial.component.ModComponents;
 import github.rahularora375.famspecial.item.entries.EshEndraNaveshItems;
 import github.rahularora375.famspecial.item.entries.FireSerpentItems;
 import github.rahularora375.famspecial.item.entries.KnightRadiantItems;
@@ -9,6 +10,7 @@ import github.rahularora375.famspecial.item.entries.NecromancerItems;
 import github.rahularora375.famspecial.item.entries.OldFamItems;
 import github.rahularora375.famspecial.item.entries.PacifistItems;
 import github.rahularora375.famspecial.item.entries.PoseidonItems;
+import github.rahularora375.famspecial.item.entries.RaidersLegacyItems;
 import github.rahularora375.famspecial.item.entries.ShurimaItems;
 import github.rahularora375.famspecial.item.entries.ThorItems;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -59,6 +61,7 @@ public class ModItemGroups {
                         EshEndraNaveshItems.addWeapons(entries, enchants);
                         ShurimaItems.addWeapons(entries, enchants);
                         ThorItems.addWeapons(entries, enchants);
+                        RaidersLegacyItems.addWeapons(entries, enchants);
 
                         OldFamItems.addTools(entries, enchants);
                         MistbornItems.addTools(entries, enchants);
@@ -90,6 +93,7 @@ public class ModItemGroups {
                         EshEndraNaveshItems.addArmor(entries, enchants);
                         ShurimaItems.addArmor(entries, enchants);
                         ThorItems.addArmor(entries, enchants);
+                        RaidersLegacyItems.addArmor(entries, enchants);
                     }).build());
 
     // === Shared helpers (used by entries/*Items classes) ===
@@ -122,6 +126,13 @@ public class ModItemGroups {
         ItemStack stack = new ItemStack(item);
         stack.set(DataComponentTypes.CUSTOM_NAME, name);
         stack.set(DataComponentTypes.LORE, new LoreComponent(lore));
+        // Identity stamp: marks this stack as a themed Fam Special gear piece.
+        // Every themed item (weapon, tool, armor — all 10 themes) flows through this
+        // helper, so stamping here propagates the component to creative-tab stacks,
+        // loot-injected stacks, and any other code path that builds themed gear.
+        // The anvil merge feature uses this as a forgery gate so players can't
+        // stamp a SET_ID onto a plain vanilla item and abuse the merge.
+        stack.set(ModComponents.IS_FAMSPECIAL_GEAR, true);
 
         ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
         for (EnchantEntry def : defs) {

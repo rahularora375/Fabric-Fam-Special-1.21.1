@@ -6,7 +6,9 @@ import github.rahularora375.famspecial.effect.ModStatusEffects;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.registry.tag.EntityTypeTags;
@@ -99,5 +101,17 @@ public abstract class LivingEntityMixin {
         LivingEntity self = (LivingEntity) (Object) this;
         if (!self.hasStatusEffect(ModStatusEffects.SUNS_PROTECTION)) return original;
         return original * 0.8f;
+    }
+
+    @ModifyReturnValue(
+            method = "modifyAppliedDamage",
+            at = @At("RETURN")
+    )
+    private float famspecial$technobladeFallImmunity(float original, DamageSource source) {
+        LivingEntity self = (LivingEntity) (Object) this;
+        if (!(self instanceof PlayerEntity)) return original;
+        if (!self.hasStatusEffect(ModStatusEffects.TECHNOBLADE_NEVER_DIES)) return original;
+        if (!source.isOf(DamageTypes.FALL)) return original;
+        return 0.0f;
     }
 }

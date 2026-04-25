@@ -30,8 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
 //      LIGHTNING_BOLT on the victim. Summoner/victim sanity checks mirror
 //      NecromancerSummon.
 //
-//   2. Storm's Awakening (Thunderhelm): AFTER_DEATH hook. On any kill the
-//      wearer performs, if the world is NOT already thundering, roll 8%
+//   2. Storm's Awakening (Warrior's Greaves): AFTER_DEATH hook. On any kill
+//      the wearer performs, if the world is NOT already thundering, roll 8%
 //      to start a thunderstorm via ServerWorld#setWeather. Per-player
 //      24000-tick (one Minecraft day) cooldown. CRITICAL: if it's already
 //      thundering the kill is skipped entirely — no roll, no cooldown
@@ -51,14 +51,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ThorEffects {
     // Storm's Awakening: flat 8% roll per kill, with a 24000-tick (one Minecraft
     // day) per-player cooldown after a successful trigger.
-    // TESTING VALUE — restore before release
-    private static final float STORM_TRIGGER_CHANCE = 1.00f;
+    private static final float STORM_TRIGGER_CHANCE = 0.08f;
     private static final long STORM_COOLDOWN_TICKS = 24000L;
-    // Thunderstorm duration on trigger: 4800 ticks (~4 minutes real-time).
+    // Thunderstorm duration on trigger: 2400 ticks (~2 minutes real-time).
     // clearDuration = 0 (don't schedule clear weather afterward; vanilla's
     // weather system will tick its own follow-up clear). raining = true,
     // thundering = true — identical to /weather thunder.
-    private static final int STORM_THUNDER_DURATION_TICKS = 4800;
+    private static final int STORM_THUNDER_DURATION_TICKS = 2400;
 
     // Lightning on Hit: 20% roll in clear weather, 100% in a thunderstorm
     // (the latter matches the Mjolnir fantasy — "in a storm, every hit
@@ -73,7 +72,7 @@ public final class ThorEffects {
 
     private ThorEffects() {}
 
-    // Public helper — read by ArmorEffects' storms_awakening_helmet_ready
+    // Public helper — read by ArmorEffects' storms_awakening_legs_ready
     // bonus so the cosmetic HUD badge only appears while the ability is
     // armed (i.e. NOT within the cooldown window that follows a successful
     // trigger). Matches the NecromancerSummon.isOnCooldown shape 1:1 so the
@@ -87,7 +86,7 @@ public final class ThorEffects {
         // Mechanic 1: Lightning on Hit (Mjolnir).
         ServerLivingEntityEvents.AFTER_DAMAGE.register(ThorEffects::onAfterDamage);
 
-        // Mechanic 2: Storm's Awakening (Thunderhelm kill-triggered storm).
+        // Mechanic 2: Storm's Awakening (Warrior's Greaves kill-triggered storm).
         ServerLivingEntityEvents.AFTER_DEATH.register(ThorEffects::onAfterDeath);
 
         // Mechanic 3: Mjolnir's Riptide (5/5 right-click launch) — owned by
@@ -131,11 +130,11 @@ public final class ThorEffects {
         if (!(attackerEntity instanceof ServerPlayerEntity player)) return;
         if (entity == attackerEntity) return;
 
-        // Helmet gate — the kill only counts if the player is wearing
-        // Thunderhelm. Read the HEAD slot directly rather than the full-set
-        // check since Storm's Awakening is a piece-alone mechanic.
-        ItemStack helmet = player.getEquippedStack(EquipmentSlot.HEAD);
-        if (!Boolean.TRUE.equals(helmet.get(ModComponents.TRIGGERS_STORM_AWAKENING))) return;
+        // Leggings gate — the kill only counts if the player is wearing
+        // Warrior's Greaves. Read the LEGS slot directly rather than the
+        // full-set check since Storm's Awakening is a piece-alone mechanic.
+        ItemStack legs = player.getEquippedStack(EquipmentSlot.LEGS);
+        if (!Boolean.TRUE.equals(legs.get(ModComponents.TRIGGERS_STORM_AWAKENING))) return;
 
         if (!(player.getEntityWorld() instanceof ServerWorld world)) return;
 
@@ -178,11 +177,11 @@ public final class ThorEffects {
         // badge on the next refresh cycle.
         long now = world.getTime();
         lastStormTriggerTick.put(player.getUuid(), now);
-        // Stamp absolute cooldown-end tick on the worn Thunderhelm so the
-        // client tooltip can render the MM:SS countdown. Server keeps using
-        // its own per-UUID map as the source of truth; the stamp is purely
-        // for display. Mirrors NecromancerSummon.stampCooldownOnWornSet.
-        helmet.set(ModComponents.STORM_COOLDOWN_END, now + STORM_COOLDOWN_TICKS);
+        // Stamp absolute cooldown-end tick on the worn Warrior's Greaves so
+        // the client tooltip can render the MM:SS countdown. Server keeps
+        // using its own per-UUID map as the source of truth; the stamp is
+        // purely for display. Mirrors NecromancerSummon.stampCooldownOnWornSet.
+        legs.set(ModComponents.STORM_COOLDOWN_END, now + STORM_COOLDOWN_TICKS);
     }
 
     // Private helper — true only when the player has all four Thor armor

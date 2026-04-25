@@ -21,6 +21,12 @@ public final class ModSounds {
     public static final SoundEvent BONUS_DIAMOND =
             Registry.register(Registries.SOUND_EVENT, BONUS_DIAMOND_ID, SoundEvent.of(BONUS_DIAMOND_ID));
 
+    public static final Identifier INDY_ID =
+            Identifier.of(FamSpecial.MOD_ID, "indy");
+
+    public static final SoundEvent INDY =
+            Registry.register(Registries.SOUND_EVENT, INDY_ID, SoundEvent.of(INDY_ID));
+
     public static void register() {
         FamSpecial.LOGGER.info("Registering sounds for {}", FamSpecial.MOD_ID);
     }

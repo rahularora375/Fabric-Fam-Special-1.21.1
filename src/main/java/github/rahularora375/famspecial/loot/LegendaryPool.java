@@ -26,10 +26,10 @@ public final class LegendaryPool {
     private LegendaryPool() {}
 
     private enum LootTier {
-        CRAZY(640),
-        S(1440),
-        A(1840),
-        F(3040);
+        CRAZY(1173),
+        S(2506),
+        A(5173),
+        F(10506);
 
         final int emptyWeight;
 
@@ -43,14 +43,14 @@ public final class LegendaryPool {
             LootTables.TRIAL_CHAMBERS_REWARD_OMINOUS_UNIQUE_CHEST,
             LootTables.ANCIENT_CITY_CHEST,
             LootTables.ANCIENT_CITY_ICE_BOX_CHEST,
-            LootTables.BASTION_TREASURE_CHEST
+            LootTables.BASTION_TREASURE_CHEST,
+            LootTables.WOODLAND_MANSION_CHEST
     );
 
     // S Tier — hard (desert/jungle temples, mansion, buried treasure, trial chambers unique, bastions)
     private static final Set<RegistryKey<LootTable>> S_TIER = Set.of(
             LootTables.DESERT_PYRAMID_CHEST,
             LootTables.JUNGLE_TEMPLE_CHEST,
-            LootTables.WOODLAND_MANSION_CHEST,
             LootTables.BURIED_TREASURE_CHEST,
             LootTables.TRIAL_CHAMBERS_REWARD_UNIQUE_CHEST,
             LootTables.BASTION_BRIDGE_CHEST,

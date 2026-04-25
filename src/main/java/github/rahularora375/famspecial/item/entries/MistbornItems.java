@@ -97,11 +97,23 @@ public final class MistbornItems {
     private MistbornItems() {}
 
     public static void addWeapons(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // Atium Dagger — Mistborn-adjacent weapon. Marker component
-        // NIGHT_STRENGTH makes ArmorEffects swap its AttributeModifiers to the
-        // "night" form while held in the main hand at night or in Nether/End,
-        // so the damage tooltip shifts (day 4 → night 8). Speed stays constant
-        // at double vanilla (3.2).
+        entries.add(buildAtiumDagger(enchants));
+    }
+
+    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
+
+    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
+        entries.add(buildMistbornVeil(enchants));
+        entries.add(buildMistbornCloak(enchants));
+        entries.add(buildMistbornWrap(enchants));
+        entries.add(buildMistbornDrift(enchants));
+    }
+
+    // Atium Dagger — Mistborn-adjacent weapon. Marker component NIGHT_STRENGTH
+    // makes ArmorEffects swap its AttributeModifiers to the "night" form while
+    // held in the main hand at night or in Nether/End, so the damage tooltip
+    // shifts (day 4 → night 8). Speed stays constant at double vanilla (3.2).
+    public static ItemStack buildAtiumDagger(RegistryWrapper<Enchantment> enchants) {
         ItemStack atiumDagger = ModItemGroups.buildItem(Items.NETHERITE_SWORD,
                 twoTone("Atium", "Dagger"),
                 List.of(Text.literal("I represent that one thing").setStyle(LORE_BASE),
@@ -111,19 +123,17 @@ public final class MistbornItems {
                 ModItemGroups.e(Enchantments.SHARPNESS, 5), ModItemGroups.e(Enchantments.MENDING, 1));
         atiumDagger.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, DAGGER_DAY_MODIFIERS);
         atiumDagger.set(ModComponents.NIGHT_STRENGTH, true);
-        entries.add(atiumDagger);
+        return atiumDagger;
     }
 
-    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
-
-    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // Mistborn Set — two-tone names + accented lore. No enchantments.
-        // "Part of the Mistborn Set (X/4)" and "Grants Night Vision" tooltip
-        // lines are appended client-side via ItemTooltipCallback in
-        // FamSpecialClient — the counter switches to gold at 4/4 to signal the
-        // set bonus is active. Full-set bonus (Strength I + Speed I) applied
-        // in ArmorEffects when all four pieces with SET_ID="mistborn" are
-        // equipped together.
+    // Mistborn Set — two-tone names + accented lore. No enchantments.
+    // "Part of the Mistborn Set (X/4)" and "Grants Night Vision" tooltip
+    // lines are appended client-side via ItemTooltipCallback in
+    // FamSpecialClient — the counter switches to gold at 4/4 to signal the
+    // set bonus is active. Full-set bonus (Strength I + Speed I) applied
+    // in ArmorEffects when all four pieces with SET_ID="mistborn" are
+    // equipped together.
+    public static ItemStack buildMistbornVeil(RegistryWrapper<Enchantment> enchants) {
         ItemStack mistbornVeil = ModItemGroups.buildItem(Items.DIAMOND_HELMET,
                 twoTone("Mistborn", "Veil"),
                 List.of(ModItemGroups.loreLine(LORE_BASE,
@@ -137,8 +147,10 @@ public final class MistbornItems {
         mistbornVeil.set(ModComponents.GRANTS_NIGHT_VISION, true);
         mistbornVeil.set(ModComponents.SET_ID, "mistborn");
         mistbornVeil.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, VEIL_MODIFIERS);
-        entries.add(mistbornVeil);
+        return mistbornVeil;
+    }
 
+    public static ItemStack buildMistbornCloak(RegistryWrapper<Enchantment> enchants) {
         ItemStack mistbornCloak = ModItemGroups.buildItem(Items.DIAMOND_CHESTPLATE,
                 twoTone("Mistborn", "Cloak"),
                 List.of(ModItemGroups.loreLine(LORE_BASE,
@@ -147,8 +159,10 @@ public final class MistbornItems {
                 enchants);
         mistbornCloak.set(ModComponents.SET_ID, "mistborn");
         mistbornCloak.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, CLOAK_MODIFIERS);
-        entries.add(mistbornCloak);
+        return mistbornCloak;
+    }
 
+    public static ItemStack buildMistbornWrap(RegistryWrapper<Enchantment> enchants) {
         ItemStack mistbornWrap = ModItemGroups.buildItem(Items.DIAMOND_LEGGINGS,
                 twoTone("Mistborn", "Wrap"),
                 List.of(ModItemGroups.loreLine(LORE_BASE,
@@ -160,15 +174,17 @@ public final class MistbornItems {
                 enchants);
         mistbornWrap.set(ModComponents.SET_ID, "mistborn");
         mistbornWrap.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, WRAP_MODIFIERS);
-        entries.add(mistbornWrap);
+        return mistbornWrap;
+    }
 
+    public static ItemStack buildMistbornDrift(RegistryWrapper<Enchantment> enchants) {
         ItemStack mistbornDrift = ModItemGroups.buildItem(Items.DIAMOND_BOOTS,
                 twoTone("Mistborn", "Drift"),
                 List.of(Text.literal("There's always another secret").setStyle(LORE_BASE)),
                 enchants);
         mistbornDrift.set(ModComponents.SET_ID, "mistborn");
         mistbornDrift.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, DRIFT_MODIFIERS);
-        entries.add(mistbornDrift);
+        return mistbornDrift;
     }
 
     private static Text twoTone(String prefix, String piece) {

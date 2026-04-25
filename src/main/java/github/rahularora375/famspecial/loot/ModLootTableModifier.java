@@ -10,6 +10,7 @@ public class ModLootTableModifier {
             var enchants = registries.getOrThrow(RegistryKeys.ENCHANTMENT);
             LegendaryPool.buildFor(key, enchants).ifPresent(pool -> tableBuilder.pool(pool));
             MapsPool.buildFor(key).ifPresent(pool -> tableBuilder.pool(pool));
+            ThemedSetsPool.buildFor(key, enchants).ifPresent(pool -> tableBuilder.pool(pool));
         });
     }
 }

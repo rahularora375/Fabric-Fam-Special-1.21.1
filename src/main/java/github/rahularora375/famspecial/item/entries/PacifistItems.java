@@ -70,12 +70,25 @@ public final class PacifistItems {
     private PacifistItems() {}
 
     public static void addWeapons(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // Sage's Grace — diamond sword flagged HEALS_TARGET. AttackHandlers
-        // reads that flag and swaps vanilla damage for a heal on the target
-        // (4 HP normal, 8 HP crit) plus heart particles and a levelup chime.
-        // Fixed loadout (Unbreaking 5 + Mending); grindstone/anvil blocked via
-        // mixins so it stays pristine. Shares the electric-cyan palette with
-        // the armor set but is NOT a set member (no SET_ID).
+        entries.add(buildSagesGrace(enchants));
+    }
+
+    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
+
+    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
+        entries.add(buildSagesCrown(enchants));
+        entries.add(buildSonOfThors(enchants));
+        entries.add(buildSagesWrap(enchants));
+        entries.add(buildVikingsFarewell(enchants));
+    }
+
+    // Sage's Grace — diamond sword flagged HEALS_TARGET. AttackHandlers
+    // reads that flag and swaps vanilla damage for a heal on the target
+    // (4 HP normal, 8 HP crit) plus heart particles and a levelup chime.
+    // Fixed loadout (Unbreaking 5 + Mending); grindstone/anvil blocked via
+    // mixins so it stays pristine. Shares the electric-cyan palette with
+    // the armor set but is NOT a set member (no SET_ID).
+    public static ItemStack buildSagesGrace(RegistryWrapper<Enchantment> enchants) {
         ItemStack sagesGrace = ModItemGroups.buildItem(Items.DIAMOND_SWORD,
                 twoTone("Sage's", "Grace"),
                 List.of(Text.literal("Your duty is not over").setStyle(LORE_BASE)),
@@ -83,19 +96,17 @@ public final class PacifistItems {
                 ModItemGroups.e(Enchantments.UNBREAKING, 5),
                 ModItemGroups.e(Enchantments.MENDING, 1));
         sagesGrace.set(ModComponents.HEALS_TARGET, true);
-        entries.add(sagesGrace);
+        return sagesGrace;
     }
 
-    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
-
-    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // Pacifist Set — 4-piece diamond armor with a shared SET_ID. Full-set
-        // bonus (Regen I + Armor +3 + Knockback Resistance +3) is applied in
-        // ArmorEffects whenever all four pieces with SET_ID="pacifist" are
-        // equipped together. No time gate; the bonus is always on while suited.
-        // Each piece uses a distinct "first/last" name split rather than a
-        // common prefix — first word is the electric-cyan italic, last word is
-        // the bright-blue bold piece accent.
+    // Pacifist Set — 4-piece diamond armor with a shared SET_ID. Full-set
+    // bonus (Regen I + Armor +3 + Knockback Resistance +3) is applied in
+    // ArmorEffects whenever all four pieces with SET_ID="pacifist" are
+    // equipped together. No time gate; the bonus is always on while suited.
+    // Each piece uses a distinct "first/last" name split rather than a
+    // common prefix — first word is the electric-cyan italic, last word is
+    // the bright-blue bold piece accent.
+    public static ItemStack buildSagesCrown(RegistryWrapper<Enchantment> enchants) {
         ItemStack sagesCrown = ModItemGroups.buildItem(Items.DIAMOND_HELMET,
                 twoTone("Sage's", "Crown"),
                 List.of(Text.literal("I will defend you all with my power").setStyle(LORE_BASE),
@@ -104,8 +115,10 @@ public final class PacifistItems {
         sagesCrown.set(ModComponents.SET_ID, "pacifist");
         sagesCrown.set(ModComponents.SHOWS_ENTITY_HP, true);
         sagesCrown.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, CROWN_MODIFIERS);
-        entries.add(sagesCrown);
+        return sagesCrown;
+    }
 
+    public static ItemStack buildSonOfThors(RegistryWrapper<Enchantment> enchants) {
         ItemStack pacifistChest = ModItemGroups.buildItem(Items.DIAMOND_CHESTPLATE,
                 twoTone("Son of", "Thors"),
                 List.of(ModItemGroups.loreLine(LORE_BASE,
@@ -115,8 +128,10 @@ public final class PacifistItems {
                 enchants);
         pacifistChest.set(ModComponents.SET_ID, "pacifist");
         pacifistChest.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, THORS_MODIFIERS);
-        entries.add(pacifistChest);
+        return pacifistChest;
+    }
 
+    public static ItemStack buildSagesWrap(RegistryWrapper<Enchantment> enchants) {
         ItemStack sagesWrap = ModItemGroups.buildItem(Items.DIAMOND_LEGGINGS,
                 twoTone("Sage's", "Wrap"),
                 List.of(Text.literal("I wasn't strong enough before").setStyle(LORE_BASE),
@@ -124,8 +139,10 @@ public final class PacifistItems {
                 enchants);
         sagesWrap.set(ModComponents.SET_ID, "pacifist");
         sagesWrap.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, WRAP_MODIFIERS);
-        entries.add(sagesWrap);
+        return sagesWrap;
+    }
 
+    public static ItemStack buildVikingsFarewell(RegistryWrapper<Enchantment> enchants) {
         ItemStack pacifistBoots = ModItemGroups.buildItem(Items.DIAMOND_BOOTS,
                 twoTone("Viking's", "Farewell"),
                 List.of(ModItemGroups.loreLine(LORE_BASE,
@@ -136,7 +153,7 @@ public final class PacifistItems {
                 enchants);
         pacifistBoots.set(ModComponents.SET_ID, "pacifist");
         pacifistBoots.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, FAREWELL_MODIFIERS);
-        entries.add(pacifistBoots);
+        return pacifistBoots;
     }
 
     // Split each item name into a prefix (possessive / connector, electric-cyan

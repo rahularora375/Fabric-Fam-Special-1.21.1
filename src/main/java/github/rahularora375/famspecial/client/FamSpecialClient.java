@@ -3,10 +3,13 @@ package github.rahularora375.famspecial.client;
 import github.rahularora375.famspecial.FamSpecial;
 import github.rahularora375.famspecial.component.ModComponents;
 import github.rahularora375.famspecial.effect.ModStatusEffects;
+import github.rahularora375.famspecial.entity.ModEntities;
 import github.rahularora375.famspecial.net.VersionHandshake;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.entity.ArrowEntityRenderer;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.component.ComponentType;
@@ -137,6 +140,35 @@ public class FamSpecialClient implements ClientModInitializer {
                 boolean flightActive = hasEffect(ModStatusEffects.ASGARDIANS_FLIGHT);
                 lines.add(grantLine("Grants ", "Asgardian's Flight", flightActive));
             }
+            if ("raider".equals(setId)) {
+                // Raider Set: 4-piece full set unlocks Technoblade Never Dies.
+                // Set line gold when 4/4 worn AND the effect is currently
+                // active on the player (mirrors the server-side gate). Per-
+                // piece grants on legs (Bounty Hunter) and on the Fortune &
+                // Glory crossbow (Crusader's Volley) are emitted by the
+                // BOUNTY_HUNTER and CRUSADERS_VOLLEY flag branches below.
+                int count = countEquippedWithSetId("raider");
+                boolean full = count == 4;
+                boolean technoActive = hasEffect(ModStatusEffects.TECHNOBLADE_NEVER_DIES);
+                lines.add(buildSetLine("Raider Set", count, full && technoActive));
+                lines.add(grantLine("Grants ", "Technoblade Never Dies", full && technoActive));
+            }
+            if (Boolean.TRUE.equals(stack.get(ModComponents.BOUNTY_HUNTER))) {
+                // Bounty Hunter lives on the Raider leggings — the per-piece
+                // grant fires whenever the leggings are worn and the effect
+                // is currently active on the player (mirrors the server-side
+                // gate that tracks recent kill streaks).
+                boolean active = hasEffect(ModStatusEffects.BOUNTY_HUNTER);
+                lines.add(grantLine("Grants ", "Bounty Hunter", active));
+            }
+            if (Boolean.TRUE.equals(stack.get(ModComponents.CRUSADERS_VOLLEY))) {
+                // Crusader's Volley lives on the Fortune & Glory crossbow —
+                // the per-piece grant fires whenever the effect is currently
+                // active on the player (mirrors the server-side gate that
+                // releases the bonus shot).
+                boolean active = hasEffect(ModStatusEffects.CRUSADERS_VOLLEY);
+                lines.add(grantLine("Grants ", "Crusader's Volley", active));
+            }
             if ("necromancer".equals(setId)) {
                 // No time gate. +0.5 heart per piece renders natively in
                 // attributes. 4/4 bonus is Rotten Muscle — the summon charge
@@ -162,10 +194,10 @@ public class FamSpecialClient implements ClientModInitializer {
                 lines.add(grantLine("Grants ", "Water Breathing", active));
             }
             if (Boolean.TRUE.equals(stack.get(ModComponents.GRANTS_OMINOUS))) {
-                // Bad Omen fires only when the helmet is worn at night (or in
+                // Bad Omen fires only when the boots are worn at night (or in
                 // Nether/End) — mirrors the server-side gate in ArmorEffects
-                // (ominous_helmet bonus), which reuses the Mistborn night gate.
-                boolean active = isWornWithFlag(EquipmentSlot.HEAD, ModComponents.GRANTS_OMINOUS)
+                // (ominous_boots bonus), which reuses the Mistborn night gate.
+                boolean active = isWornWithFlag(EquipmentSlot.FEET, ModComponents.GRANTS_OMINOUS)
                         && isNightOrTimeless();
                 lines.add(grantLine("Grants ", "Bad Omen", active));
             }
@@ -232,12 +264,12 @@ public class FamSpecialClient implements ClientModInitializer {
                 lines.add(grantLine("Grants ", "Wither Touch", active));
             }
             if (Boolean.TRUE.equals(stack.get(ModComponents.GRANTS_SUNS_PROTECTION))) {
-                // Sun's Protection fires when the helmet is worn AND the
+                // Sun's Protection fires when the boots are worn AND the
                 // player is in any desert-family biome (desert / badlands /
                 // eroded badlands) — mirrors the server gate in ArmorEffects.
                 // Matches the other desert-gated tooltip; state flips in
                 // sync with the server gate via the MOD_MANAGED diff pass.
-                boolean active = isWornWithFlag(EquipmentSlot.HEAD, ModComponents.GRANTS_SUNS_PROTECTION)
+                boolean active = isWornWithFlag(EquipmentSlot.FEET, ModComponents.GRANTS_SUNS_PROTECTION)
                         && isInDesert();
                 lines.add(grantLine("Grants ", "Sun's Protection", active));
             }
@@ -258,15 +290,15 @@ public class FamSpecialClient implements ClientModInitializer {
                 lines.add(grantLine("Grants ", "God of Thunder", active));
             }
             if (Boolean.TRUE.equals(stack.get(ModComponents.TRIGGERS_STORM_AWAKENING))) {
-                // Storm's Awakening fires whenever Thunderhelm is worn in the
-                // HEAD slot — mirrors the server-side gate in
+                // Storm's Awakening fires whenever Warrior's Greaves is worn
+                // in the LEGS slot — mirrors the server-side gate in
                 // ThorEffects.onAfterDeath. The Grants line carries a crimson
                 // MM:SS suffix read off STORM_COOLDOWN_END (stamped server-
                 // side when the storm triggers), so the tooltip shows
                 // remaining cooldown while it ticks down. Mirrors the
                 // Rotten Muscle pattern above.
                 long cdRemaining = stormCooldownRemaining(stack);
-                boolean active = isWornWithFlag(EquipmentSlot.HEAD, ModComponents.TRIGGERS_STORM_AWAKENING)
+                boolean active = isWornWithFlag(EquipmentSlot.LEGS, ModComponents.TRIGGERS_STORM_AWAKENING)
                         && cdRemaining <= 0L;
                 lines.add(grantLineWithCooldown("Grants ", "Storm's Awakening", active, cdRemaining));
             }
@@ -279,6 +311,8 @@ public class FamSpecialClient implements ClientModInitializer {
                 lines.add(grantLine("Grants ", "Shadi Buff", active));
             }
         });
+
+        EntityRendererRegistry.register(ModEntities.VOLLEY_ARROW, ArrowEntityRenderer::new);
 
         HealthOverlay.register();
         VersionHandshake.registerClient();
@@ -313,8 +347,8 @@ public class FamSpecialClient implements ClientModInitializer {
         return Math.max(0L, remaining);
     }
 
-    // Same shape as necromancerCooldownRemaining, reading the Thunderhelm-
-    // stamped STORM_COOLDOWN_END for Storm's Awakening.
+    // Same shape as necromancerCooldownRemaining, reading the Warrior's-
+    // Greaves-stamped STORM_COOLDOWN_END for Storm's Awakening.
     private static long stormCooldownRemaining(ItemStack stack) {
         Long end = stack.get(ModComponents.STORM_COOLDOWN_END);
         if (end == null) return 0L;

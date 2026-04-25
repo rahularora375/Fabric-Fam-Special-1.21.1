@@ -8,5 +8,10 @@
     "sounds": [
       { "name": "famspecial:lucky", "stream": false }
     ]
+  },
+  "indy": {
+    "sounds": [
+      { "name": "famspecial:indy", "stream": false }
+    ]
   }
 }

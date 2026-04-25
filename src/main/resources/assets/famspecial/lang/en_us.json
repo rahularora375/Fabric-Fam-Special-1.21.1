@@ -21,5 +21,9 @@
     "effect.famspecial.storms_awakening": "Storm's Awakening",
     "effect.famspecial.asgardians_flight": "Asgardian's Flight",
     "effect.famspecial.sages_grace": "Sage's Grace",
-    "item.famspecial.mjolnir": "Mjolnir"
+    "effect.famspecial.bounty_hunter": "Bounty Hunter",
+    "effect.famspecial.technoblade_never_dies": "Technoblade Never Dies",
+    "effect.famspecial.crusaders_volley": "Crusader's Volley",
+    "item.famspecial.mjolnir": "Mjolnir",
+    "item.famspecial.fortune_and_glory": "Fortune & Glory"
 }

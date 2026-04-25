@@ -25,10 +25,17 @@ import java.util.List;
 public final class EshEndraNaveshItems {
     private EshEndraNaveshItems() {}
 
-    private static final Style NAME_PIECE = Style.EMPTY
-            .withColor(TextColor.fromRgb(0xE8D171)).withBold(true).withItalic(false);
-    private static final Style LORE_BASE = Style.EMPTY
-            .withColor(TextColor.fromRgb(0xA88FBA)).withItalic(true);
+    private static final Style NAME_PREFIX = Style.EMPTY.withColor(TextColor.fromRgb(0xFFB7D5)).withItalic(true);
+    private static final Style NAME_PIECE  = Style.EMPTY.withColor(TextColor.fromRgb(0xFFF1A8)).withBold(true).withItalic(false);
+    private static final Style LORE_BASE   = Style.EMPTY.withColor(TextColor.fromRgb(0xBFE3FF)).withItalic(true);
+    @SuppressWarnings("unused")
+    private static final Style LORE_ACCENT = Style.EMPTY.withColor(TextColor.fromRgb(0xD4B8FF)).withItalic(true);
+
+    private static Text twoTone(String prefix, String piece) {
+        return Text.literal(prefix).setStyle(NAME_PREFIX)
+                .append(Text.literal(" "))
+                .append(Text.literal(piece).setStyle(NAME_PIECE));
+    }
 
     // Per-piece modifiers: every Esh-Endra-Navesh armor piece grants +1
     // MAX_HEALTH (= 0.5 heart) on its slot. Totals at 4/4 are +2 hearts. Vanilla
@@ -59,55 +66,72 @@ public final class EshEndraNaveshItems {
     public static void addWeapons(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
 
     public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // Theme-adjacent tool — no SET_ID, so it doesn't count toward 4/4.
-        // Just Hit Bro — diamond pickaxe. Carries BONUS_DIAMOND_CHANCE so
-        // BlockBreakHandler rolls the vanilla blocks/diamond_ore loot table on
-        // every break at 1/10_000, using the same stack as the tool so Fortune
-        // and Silk Touch apply naturally.
+        entries.add(buildJustHitBro(enchants));
+    }
+
+    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
+        entries.add(buildTimeDekhloHelmet(enchants));
+        entries.add(buildBombardiroCoccodrillo(enchants));
+        entries.add(buildKneeUsePaper(enchants));
+        entries.add(buildDhoomMachale(enchants));
+    }
+
+    // Theme-adjacent tool — no SET_ID, so it doesn't count toward 4/4.
+    // Just Hit Bro — diamond pickaxe. Carries BONUS_DIAMOND_CHANCE so
+    // BlockBreakHandler rolls the vanilla blocks/diamond_ore loot table on
+    // every break at 1/10_000, using the same stack as the tool so Fortune
+    // and Silk Touch apply naturally.
+    public static ItemStack buildJustHitBro(RegistryWrapper<Enchantment> enchants) {
         ItemStack pickaxe = ModItemGroups.buildItem(Items.DIAMOND_PICKAXE,
-                Text.literal("Just Hit Bro").setStyle(NAME_PIECE),
+                twoTone("Just Hit", "Bro"),
                 List.of(Text.literal("Abe yar lassi bugged hai kya ?").setStyle(LORE_BASE)),
                 enchants,
                 ModItemGroups.e(Enchantments.FORTUNE, 4));
         pickaxe.set(ModComponents.BONUS_DIAMOND_CHANCE, true);
-        entries.add(pickaxe);
+        return pickaxe;
     }
 
-    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // All four pieces tagged SET_ID="esh_endra_navesh".
-        // 4/4 set bonus is Haste I. Helmet additionally grants Bad Omen while
-        // worn between 8 PM and 6 AM (or always in Nether/End).
+    // All four pieces tagged SET_ID="esh_endra_navesh".
+    // 4/4 set bonus is Haste I. Boots additionally grant Bad Omen while
+    // worn between 8 PM and 6 AM (or always in Nether/End).
+    public static ItemStack buildTimeDekhloHelmet(RegistryWrapper<Enchantment> enchants) {
         ItemStack helmet = ModItemGroups.buildItem(Items.DIAMOND_HELMET,
-                Text.literal("Time Dekhlo Helmet").setStyle(NAME_PIECE),
+                twoTone("Time Dekhlo", "Helmet"),
                 List.of(Text.literal("12 baj gaye bhai, brain off karke khel rha hu...").setStyle(LORE_BASE)),
                 enchants);
         helmet.set(ModComponents.SET_ID, "esh_endra_navesh");
-        helmet.set(ModComponents.GRANTS_OMINOUS, true);
         helmet.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, HEAD_MODIFIERS);
-        entries.add(helmet);
+        return helmet;
+    }
 
+    public static ItemStack buildBombardiroCoccodrillo(RegistryWrapper<Enchantment> enchants) {
         ItemStack chestplate = ModItemGroups.buildItem(Items.DIAMOND_CHESTPLATE,
-                Text.literal("Bombardiro Coccodrillo").setStyle(NAME_PIECE),
+                twoTone("Bombardiro", "Coccodrillo"),
                 List.of(Text.literal("Chestplate Desu").setStyle(LORE_BASE)),
                 enchants);
         chestplate.set(ModComponents.SET_ID, "esh_endra_navesh");
         chestplate.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, CHEST_MODIFIERS);
-        entries.add(chestplate);
+        return chestplate;
+    }
 
+    public static ItemStack buildKneeUsePaper(RegistryWrapper<Enchantment> enchants) {
         ItemStack leggings = ModItemGroups.buildItem(Items.DIAMOND_LEGGINGS,
-                Text.literal("Knee-Use Paper").setStyle(NAME_PIECE),
-                List.of(Text.literal("Bobby Deol mai sone di").setStyle(LORE_BASE)),
+                twoTone("Knee-Use", "Paper"),
+                List.of(Text.literal("Kanjurmarg ka Raja").setStyle(LORE_BASE)),
                 enchants);
         leggings.set(ModComponents.SET_ID, "esh_endra_navesh");
         leggings.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, LEGS_MODIFIERS);
-        entries.add(leggings);
+        return leggings;
+    }
 
+    public static ItemStack buildDhoomMachale(RegistryWrapper<Enchantment> enchants) {
         ItemStack boots = ModItemGroups.buildItem(Items.DIAMOND_BOOTS,
-                Text.literal("Dhoom Machale").setStyle(NAME_PIECE),
+                twoTone("Dhoom", "Machale"),
                 List.of(Text.literal("~ Coop 2025").setStyle(LORE_BASE)),
                 enchants);
         boots.set(ModComponents.SET_ID, "esh_endra_navesh");
+        boots.set(ModComponents.GRANTS_OMINOUS, true);
         boots.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, FEET_MODIFIERS);
-        entries.add(boots);
+        return boots;
     }
 }

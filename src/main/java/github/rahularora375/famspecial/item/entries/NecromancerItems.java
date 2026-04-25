@@ -89,12 +89,25 @@ public final class NecromancerItems {
     }
 
     public static void addWeapons(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // Theme-adjacent — no SET_ID, so it doesn't count toward 4/4.
-        // Thriller's Edge: DIAMOND_AXE base with modest enchants. The signature
-        // behavior is Wither II on hit (APPLIES_WITHER_ON_HIT) — applied
-        // additively by AttackHandlers' ALLOW_DAMAGE handler, covering melee
-        // plus any future projectile axe-hit path. Gates on the stack flag,
-        // not the tool material, so the flag is the single source of truth.
+        entries.add(buildThrillersEdge(enchants));
+    }
+
+    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
+
+    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
+        entries.add(buildFedoraOfTheDamned(enchants));
+        entries.add(buildSmoothCriminalsVestment(enchants));
+        entries.add(buildBillieJeans(enchants));
+        entries.add(buildMoonwalkersCurse(enchants));
+    }
+
+    // Theme-adjacent — no SET_ID, so it doesn't count toward 4/4.
+    // Thriller's Edge: DIAMOND_AXE base with modest enchants. The signature
+    // behavior is Wither II on hit (APPLIES_WITHER_ON_HIT) — applied
+    // additively by AttackHandlers' ALLOW_DAMAGE handler, covering melee
+    // plus any future projectile axe-hit path. Gates on the stack flag,
+    // not the tool material, so the flag is the single source of truth.
+    public static ItemStack buildThrillersEdge(RegistryWrapper<Enchantment> enchants) {
         ItemStack thrillersEdge = ModItemGroups.buildItem(Items.NETHERITE_AXE,
                 twoTone("Thriller's", "Edge"),
                 List.of(ModItemGroups.loreLine(LORE_BASE,
@@ -104,17 +117,15 @@ public final class NecromancerItems {
                 ModItemGroups.e(Enchantments.SHARPNESS, 5));
         thrillersEdge.set(ModComponents.APPLIES_WITHER_ON_HIT, true);
         thrillersEdge.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, AXE_MODIFIERS);
-        entries.add(thrillersEdge);
+        return thrillersEdge;
     }
 
-    public static void addTools(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) { }
-
-    public static void addArmor(ItemGroup.Entries entries, RegistryWrapper<Enchantment> enchants) {
-        // All four pieces tagged SET_ID="necromancer".
-        // 4/4 set bonus is Zombie Reinforcements — on-hit spawn of 2 armored
-        // zombies aggro'd on the attacker, 5-min cooldown. Event-driven, lives
-        // in NecromancerSummon (AFTER_DAMAGE hook). No BONUSES entry here —
-        // the summon fires on damage, not on a tick trigger.
+    // All four pieces tagged SET_ID="necromancer".
+    // 4/4 set bonus is Zombie Reinforcements — on-hit spawn of 2 armored
+    // zombies aggro'd on the attacker, 5-min cooldown. Event-driven, lives
+    // in NecromancerSummon (AFTER_DAMAGE hook). No BONUSES entry here —
+    // the summon fires on damage, not on a tick trigger.
+    public static ItemStack buildFedoraOfTheDamned(RegistryWrapper<Enchantment> enchants) {
         ItemStack fedora = ModItemGroups.buildItem(Items.DIAMOND_HELMET,
                 twoTone("Fedora of the", "Damned"),
                 List.of(ModItemGroups.loreLine(LORE_BASE,
@@ -123,8 +134,10 @@ public final class NecromancerItems {
                 enchants);
         fedora.set(ModComponents.SET_ID, "necromancer");
         fedora.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, HEAD_MODIFIERS);
-        entries.add(fedora);
+        return fedora;
+    }
 
+    public static ItemStack buildSmoothCriminalsVestment(RegistryWrapper<Enchantment> enchants) {
         ItemStack vestment = ModItemGroups.buildItem(Items.DIAMOND_CHESTPLATE,
                 twoTone("Smooth Criminal's", "Vestment"),
                 List.of(ModItemGroups.loreLine(LORE_BASE,
@@ -134,8 +147,10 @@ public final class NecromancerItems {
         vestment.set(ModComponents.SET_ID, "necromancer");
         vestment.set(ModComponents.GRANTS_UNDEAD_RESISTANCE, true);
         vestment.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, CHEST_MODIFIERS);
-        entries.add(vestment);
+        return vestment;
+    }
 
+    public static ItemStack buildBillieJeans(RegistryWrapper<Enchantment> enchants) {
         ItemStack billieJeans = ModItemGroups.buildItem(Items.DIAMOND_LEGGINGS,
                 twoTone("Billie", "Jeans"),
                 List.of(ModItemGroups.loreLine(LORE_BASE,
@@ -144,8 +159,10 @@ public final class NecromancerItems {
                 enchants);
         billieJeans.set(ModComponents.SET_ID, "necromancer");
         billieJeans.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, LEGS_MODIFIERS);
-        entries.add(billieJeans);
+        return billieJeans;
+    }
 
+    public static ItemStack buildMoonwalkersCurse(RegistryWrapper<Enchantment> enchants) {
         ItemStack moonwalker = ModItemGroups.buildItem(Items.DIAMOND_BOOTS,
                 twoTone("Moonwalker's", "Curse"),
                 List.of(Text.literal("The foulest stench is in the air —").setStyle(LORE_BASE),
@@ -154,6 +171,6 @@ public final class NecromancerItems {
                 enchants);
         moonwalker.set(ModComponents.SET_ID, "necromancer");
         moonwalker.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, FEET_MODIFIERS);
-        entries.add(moonwalker);
+        return moonwalker;
     }
 }

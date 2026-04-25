@@ -47,14 +47,14 @@ public final class MapsPool {
     private static final Set<RegistryKey<LootTable>> CRAZY_TIER = Set.of(
             LootTables.TRIAL_CHAMBERS_REWARD_OMINOUS_UNIQUE_CHEST,
             LootTables.ANCIENT_CITY_CHEST,
-            LootTables.ANCIENT_CITY_ICE_BOX_CHEST
+            LootTables.ANCIENT_CITY_ICE_BOX_CHEST,
+            LootTables.WOODLAND_MANSION_CHEST
             // LootTables.BASTION_TREASURE_CHEST        // Nether
     );
 
     private static final Set<RegistryKey<LootTable>> S_TIER = Set.of(
             LootTables.DESERT_PYRAMID_CHEST,
             LootTables.JUNGLE_TEMPLE_CHEST,
-            LootTables.WOODLAND_MANSION_CHEST,
             LootTables.BURIED_TREASURE_CHEST,
             LootTables.TRIAL_CHAMBERS_REWARD_UNIQUE_CHEST
             // LootTables.BASTION_BRIDGE_CHEST,         // Nether
