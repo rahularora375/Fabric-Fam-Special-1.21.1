@@ -243,6 +243,8 @@ Predicate, evaluated in order: (a) the killer is a `ServerPlayerEntity`; (b) the
 
 The HUD-badge advertisement lives in `ArmorEffects`' `crusaders_volley_mainhand` bonus on the same `CRUSADERS_VOLLEY` flag so badge + mechanic share one source of truth.
 
+**Anvil merge (cross-reference).** F&G can be repaired and enchant-merged in an anvil with another F&G or with a vanilla `Items.CROSSBOW` in either slot — implemented as a sibling HEAD-cancellable inject `famspecial$mergeFortuneAndGlory` in `AnvilScreenHandlerMixin` (see `MIXINS.md`). Result is always F&G via `fgSource.copy()`; Multishot is stripped on the result via `Enchantment.isAcceptableItem` (mirroring the enchanting-table block driven by the `#famspecial:multishot_eligible` tag override above); Quick Charge IV is preserved as a floor. Modded crossbows (non-vanilla, non-F&G) fall through to vanilla untouched — the gate is an exact `Items.CROSSBOW` identity check, not `instanceof CrossbowItem`.
+
 ## Datapack tag overrides (Mjolnir enchant eligibility)
 
 The mod ships a small set of resource-pack JSONs under `src/main/resources/data/` that opt **Mjolnir** into a curated subset of vanilla enchantment pools. This is a **runtime-data mechanism, not a mixin** — no code changes are involved; the JSONs ship with the jar and Mojang's data loader merges them with the vanilla tags at load time.

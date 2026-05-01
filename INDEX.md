@@ -64,7 +64,7 @@ All under `java/github/rahularora375/famspecial/mixin/`. All documented in `MIXI
 | File | Purpose |
 |---|---|
 | `GrindstoneScreenHandlerMixin.java` | TAIL re-stamp of custom components on merged-elytra disenchant outputs; otherwise vanilla. |
-| `AnvilScreenHandlerMixin.java` | HEAD-cancellable themed-diamond-chestplate → vanilla-elytra merge; otherwise vanilla. |
+| `AnvilScreenHandlerMixin.java` | Two HEAD-cancellable injects on `updateResult`: (1) themed-diamond-chestplate → vanilla-elytra merge; (2) Fortune & Glory crossbow merge (F&G + F&G or F&G + vanilla `Items.CROSSBOW`, result always F&G, Multishot stripped, QC IV preserved). Otherwise vanilla. |
 | `TridentItemMixin.java` | Dry-land riptide for Poseidon 4/4 (two `@Redirect`s on `isTouchingWaterOrRain`). |
 | `LivingEntityMixin.java` | Five `@ModifyReturnValue`s on `modifyAppliedDamage` (Messmer's Flame Aegis / Shardbearing / Undead Resistance / Sun's Protection / Technoblade Never Dies fall immunity). |
 | `LivingEntityKnockbackMixin.java` | `@ModifyExpressionValue` on `LivingEntity#takeKnockback` `getAttributeValue` invoke; zeroes `KNOCKBACK_RESISTANCE` lookup when attacker has `EMPERORS_DIVIDE` (Sun Disc Spear). |

@@ -2,6 +2,7 @@ package github.rahularora375.famspecial.mixin;
 
 import github.rahularora375.famspecial.FamSpecial;
 import github.rahularora375.famspecial.component.ModComponents;
+import github.rahularora375.famspecial.item.FortuneGloryItem;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifiersComponent;
@@ -21,6 +22,7 @@ import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.ForgingSlotsManager;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.MathHelper;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,6 +30,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 // Anvil merge feature only — the chestplate→elytra identity merge. No other
@@ -55,6 +59,12 @@ public abstract class AnvilScreenHandlerMixin extends ForgingScreenHandler {
             "thor",
             "raider"
     );
+
+    // Fortune & Glory is built with Quick Charge IV baked in
+    // (see RaidersLegacyItems#buildFortuneAndGlory). The anvil-merge path below
+    // enforces this as a floor: even if both inputs lack QC entirely, or one
+    // has a lower-level QC, the merged result is forced to QC IV.
+    private static final int FG_BAKED_QUICK_CHARGE_LEVEL = 4;
 
     @Shadow @Final private Property levelCost;
     @Shadow private String newItemName;
@@ -91,30 +101,18 @@ public abstract class AnvilScreenHandlerMixin extends ForgingScreenHandler {
     private void famspecial$mergeThemedChestplateElytra(CallbackInfo ci) {
         ItemStack left = this.input.getStack(0);
         ItemStack right = this.input.getStack(1);
-
-        if (left.isEmpty() || right.isEmpty()) {
-            return;
-        }
-        if (left.getItem() != Items.DIAMOND_CHESTPLATE) {
-            return;
-        }
-        if (!MERGE_ELIGIBLE_SETS.contains(left.get(ModComponents.SET_ID))) {
-            return;
-        }
-        if (!Boolean.TRUE.equals(left.get(ModComponents.IS_FAMSPECIAL_GEAR))) {
-            return;
-        }
-        if (!right.isOf(Items.ELYTRA)) {
-            return;
-        }
-        if (right.get(ModComponents.SET_ID) != null) {
-            return;
-        }
+        if (left.isEmpty() || right.isEmpty()) return;
+        if (left.getItem() != Items.DIAMOND_CHESTPLATE) return;
+        String leftSetId = left.get(ModComponents.SET_ID);
+        if (leftSetId == null || !MERGE_ELIGIBLE_SETS.contains(leftSetId)) return;
+        if (!Boolean.TRUE.equals(left.get(ModComponents.IS_FAMSPECIAL_GEAR))) return;
+        if (!right.isOf(Items.ELYTRA)) return;
+        if (right.get(ModComponents.SET_ID) != null) return;
 
         ItemStack merged = famspecial$buildMergedElytra(left, right);
         this.output.setStack(0, merged);
         FamSpecial.LOGGER.info("Merged {} chestplate into elytra; result SET_ID={}",
-                left.get(ModComponents.SET_ID), merged.get(ModComponents.SET_ID));
+                leftSetId, merged.get(ModComponents.SET_ID));
         this.levelCost.set(4);
         this.sendContentUpdates();
         ci.cancel();
@@ -172,5 +170,213 @@ public abstract class AnvilScreenHandlerMixin extends ForgingScreenHandler {
             if (!key.matchesKey(Enchantments.MENDING) && !key.matchesKey(Enchantments.UNBREAKING)) continue;
             builder.add(key, entry.getIntValue());
         }
+    }
+
+    // Anvil merge path for the custom crossbow Fortune & Glory.
+    //
+    // Vanilla updateResult bails out for an F&G + F&G or F&G + vanilla
+    // crossbow combine because the two stacks aren't the same Item and the
+    // right side isn't a registered repair material. We intercept at HEAD so
+    // the player can repair / re-enchant F&G without losing its custom
+    // components (CRUSADERS_VOLLEY, IS_FAMSPECIAL_GEAR, custom name, lore).
+    //
+    // Allowed pairs:
+    //   - F&G + F&G              → result F&G
+    //   - F&G + vanilla CROSSBOW → result F&G
+    //   - vanilla CROSSBOW + F&G → result F&G
+    // Anything else (vanilla CROSSBOW + vanilla CROSSBOW, modded crossbows,
+    // books, dirt, ...) falls through to vanilla logic by returning early
+    // WITHOUT ci.cancel(). The scope is intentionally vanilla-only: we use
+    // an exact Items.CROSSBOW check rather than `instanceof CrossbowItem` so
+    // modded crossbows go through their own merge path.
+    //
+    // The result starts as `fgSource.copy()` so all F&G data components
+    // survive. Durability and enchantment merges follow vanilla math. The
+    // enchantment union runs through Enchantment#isAcceptableItem against the
+    // result stack, which naturally rejects Multishot — the
+    // famspecial:multishot_eligible tag (Multishot.supported_items) only
+    // contains minecraft:crossbow, and F&G isn't in the tag. A post-pass also
+    // prunes the seed-from-left entries to catch Multishot-on-left + F&G-on-
+    // right. Quick Charge is force-floored to IV so the F&G baked-in level is
+    // never lost on a merge.
+    @Inject(method = "updateResult", at = @At("HEAD"), cancellable = true)
+    private void famspecial$mergeFortuneAndGlory(CallbackInfo ci) {
+        ItemStack left = this.input.getStack(0);
+        ItemStack right = this.input.getStack(1);
+        if (left.isEmpty() || right.isEmpty()) return;
+
+        boolean leftIsFg = left.getItem() instanceof FortuneGloryItem;
+        boolean rightIsFg = right.getItem() instanceof FortuneGloryItem;
+        // At least one side must be F&G; otherwise this is not our path.
+        if (!leftIsFg && !rightIsFg) return;
+        // Each side must be either F&G or an exact vanilla crossbow.
+        boolean leftIsVanillaXbow = left.isOf(Items.CROSSBOW);
+        boolean rightIsVanillaXbow = right.isOf(Items.CROSSBOW);
+        if (!(leftIsFg || leftIsVanillaXbow)) return;
+        if (!(rightIsFg || rightIsVanillaXbow)) return;
+
+        ItemStack fgSource = leftIsFg ? left : right;
+        ItemStack result = fgSource.copy();
+
+        int cost = 0;
+        int renameCost = 0;
+
+        long priorWorkSum = (long) left.getOrDefault(DataComponentTypes.REPAIR_COST, 0)
+                + (long) right.getOrDefault(DataComponentTypes.REPAIR_COST, 0);
+
+        // Durability merge — vanilla math: right contributes its remaining
+        // durability plus 12% of result's max damage as a "repair bonus".
+        int resultMaxDmg = result.getMaxDamage();
+        int leftRem = left.getMaxDamage() - left.getDamage();
+        int rightRem = right.getMaxDamage() - right.getDamage();
+        int repairBonus = rightRem + resultMaxDmg * 12 / 100;
+        int totalRepair = leftRem + repairBonus;
+        int newDamage = Math.max(0, resultMaxDmg - totalRepair);
+        if (newDamage < result.getDamage()) {
+            result.setDamage(newDamage);
+            cost += 2;
+        }
+
+        // Enchantment union — seed from left, fold right's entries in with
+        // vanilla's same-enchant-bumps-level rule.
+        ItemEnchantmentsComponent leftEnch = EnchantmentHelper.getEnchantments(left);
+        ItemEnchantmentsComponent rightEnch = EnchantmentHelper.getEnchantments(right);
+        ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(leftEnch);
+
+        // Pre-pass: prune seed-from-left entries that aren't acceptable on
+        // the result. Must run BEFORE the right-merge loop, otherwise an
+        // ineligible left-seed entry (e.g. Multishot from a vanilla crossbow
+        // in slot 0) would still be in the builder during the canBeCombined
+        // checks below — and would cause a mutually-exclusive right-side
+        // enchant (Piercing vs Multishot) to be falsely rejected. Builder.set
+        // with level <= 0 removes the entry in 1.21.11 mappings.
+        List<RegistryEntry<Enchantment>> toRemove = new ArrayList<>();
+        for (RegistryEntry<Enchantment> key : builder.getEnchantments()) {
+            if (!key.value().isAcceptableItem(result)) toRemove.add(key);
+        }
+        for (RegistryEntry<Enchantment> key : toRemove) builder.set(key, 0);
+
+        boolean appliedAny = false;
+        boolean rejectedAny = false;
+        for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : rightEnch.getEnchantmentEntries()) {
+            RegistryEntry<Enchantment> key = entry.getKey();
+            int existing = builder.getLevel(key);
+            int incoming = entry.getIntValue();
+            int merged = (existing == incoming) ? incoming + 1 : Math.max(incoming, existing);
+            Enchantment ench = key.value();
+
+            // Eligibility on the result stack — this is what prunes Multishot:
+            // F&G isn't in the multishot_eligible tag.
+            boolean acceptable = ench.isAcceptableItem(result);
+            // Also enforce pairwise compatibility against everything already
+            // in the builder. Skip the matching-key case because canBeCombined
+            // returns false when first.equals(second) — that's the merge
+            // target, not an exclusivity collision.
+            if (acceptable) {
+                for (RegistryEntry<Enchantment> existingKey : builder.getEnchantments()) {
+                    if (!existingKey.equals(key) && !Enchantment.canBeCombined(key, existingKey)) {
+                        acceptable = false;
+                        break;
+                    }
+                }
+            }
+            if (!acceptable) {
+                rejectedAny = true;
+                continue;
+            }
+
+            appliedAny = true;
+            if (merged > ench.getMaxLevel()) merged = ench.getMaxLevel();
+            builder.set(key, merged);
+            cost += ench.getAnvilCost() * merged;
+        }
+
+        // Quick Charge IV floor — F&G is built with QC IV baked in
+        // (RaidersLegacyItems#buildFortuneAndGlory). Source the QC
+        // RegistryEntry from fgSource's enchantments to avoid a registry
+        // lookup. If neither input had QC at all, nothing to source from —
+        // accept the loss rather than fabricating an entry.
+        RegistryEntry<Enchantment> qcEntry = null;
+        for (RegistryEntry<Enchantment> e : builder.getEnchantments()) {
+            if (e.matchesKey(Enchantments.QUICK_CHARGE)) {
+                qcEntry = e;
+                break;
+            }
+        }
+        if (qcEntry == null) {
+            for (RegistryEntry<Enchantment> e : EnchantmentHelper.getEnchantments(fgSource).getEnchantments()) {
+                if (e.matchesKey(Enchantments.QUICK_CHARGE)) {
+                    builder.set(e, FG_BAKED_QUICK_CHARGE_LEVEL);
+                    break;
+                }
+            }
+        } else if (builder.getLevel(qcEntry) < FG_BAKED_QUICK_CHARGE_LEVEL) {
+            builder.set(qcEntry, FG_BAKED_QUICK_CHARGE_LEVEL);
+        }
+
+        // Rename — vanilla's three branches.
+        if (this.newItemName != null && !this.newItemName.isBlank()) {
+            if (!this.newItemName.equals(left.getName().getString())) {
+                renameCost = 1;
+                cost += renameCost;
+                result.set(DataComponentTypes.CUSTOM_NAME, Text.literal(this.newItemName));
+            }
+        } else if (left.contains(DataComponentTypes.CUSTOM_NAME)) {
+            renameCost = 1;
+            cost += renameCost;
+            result.remove(DataComponentTypes.CUSTOM_NAME);
+        }
+
+        // All-rejected branch: every right-side enchant got rejected and
+        // nothing else moved the cost. Treat as a no-op rather than charging
+        // the player for nothing.
+        if (rejectedAny && !appliedAny && cost == 0) {
+            this.output.setStack(0, ItemStack.EMPTY);
+            this.levelCost.set(0);
+            this.sendContentUpdates();
+            ci.cancel();
+            return;
+        }
+
+        EnchantmentHelper.set(result, builder.build());
+
+        // No-op branch — nothing changed at all.
+        if (cost <= 0) {
+            this.output.setStack(0, ItemStack.EMPTY);
+            this.levelCost.set(0);
+            this.sendContentUpdates();
+            ci.cancel();
+            return;
+        }
+
+        int finalCost = (int) MathHelper.clamp(priorWorkSum + cost, 0L, (long) Integer.MAX_VALUE);
+
+        // 40-level "Too Expensive!" cap (vanilla parity). Mirror vanilla's
+        // canTakeOutput gate: in survival, hand the player an empty output
+        // slot but keep the level cost on display so they see why.
+        if (finalCost >= 40 && !this.player.isInCreativeMode()) {
+            this.output.setStack(0, ItemStack.EMPTY);
+            this.levelCost.set(finalCost);
+            this.sendContentUpdates();
+            ci.cancel();
+            return;
+        }
+
+        // RepairCost bump — vanilla's 2*max+1 — but skip for pure-rename
+        // (renameCost == cost && renameCost > 0) so a rename doesn't keep
+        // doubling the prior-work penalty.
+        int newRC = Math.max(
+                left.getOrDefault(DataComponentTypes.REPAIR_COST, 0),
+                right.getOrDefault(DataComponentTypes.REPAIR_COST, 0));
+        boolean pureRename = renameCost > 0 && renameCost == cost;
+        if (!pureRename) {
+            newRC = newRC * 2 + 1;
+        }
+        result.set(DataComponentTypes.REPAIR_COST, newRC);
+
+        this.output.setStack(0, result);
+        this.levelCost.set(finalCost);
+        this.sendContentUpdates();
+        ci.cancel();
     }
 }
