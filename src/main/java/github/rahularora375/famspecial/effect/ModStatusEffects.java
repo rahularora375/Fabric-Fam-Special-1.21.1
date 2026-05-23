@@ -35,10 +35,15 @@ public class ModStatusEffects {
     //      the player sees the icon in the HUD as a visual "empowered" cue.
     //      applyUpdateEffect no-ops on a wearer — the fullSet check short-
     //      circuits damage ticks for them. Icon + particles still render.
-    //   2. Offense: applied by AttackHandlers on every melee hit while 4/4 is
-    //      worn. Targets that AREN'T wearing Fire Serpent fall through to the
-    //      damage tick — 1.0 magic damage every 25 ticks at amp 0, stops at
-    //      1 HP — mirroring vanilla PoisonStatusEffect byte-for-byte.
+    //   2. Offense: applied by AttackHandlers on every successful damage a
+    //      4/4-wearer deals to anyone other than themselves (weapon-agnostic).
+    //      Targets that AREN'T wearing Fire Serpent fall through to the
+    //      damage tick — 5.0 magic damage on mobs, 1.0 on other players,
+    //      every 25 ticks at amp 0, lethal (no HP floor). AttackHandlers
+    //      applies with a 124-tick (6.2 s) duration whose modulo alignment
+    //      delays the first tick by 25 ticks — past the application's
+    //      i-frame window — so the 4 hits each land at full strength.
+    //      Per uninterrupted cycle: 20 HP on mobs, 4 HP on other players.
     //
     // The reason we don't just apply StatusEffects.POISON is vanilla
     // immunities: spiders, undead, witches, the Wither, and the Ender Dragon
@@ -64,9 +69,10 @@ public class ModStatusEffects {
                     if (entity instanceof PlayerEntity p && ArmorEffects.hasFullSet(p, "fire_serpent")) {
                         return true;
                     }
-                    if (entity.getHealth() > 1.0F) {
-                        entity.damage(world, entity.getDamageSources().magic(), 1.0F);
-                    }
+                    // PvP tuning: other players take 1.0 magic damage per
+                    // tick (4 HP / 4-hit cycle); mobs take 5.0 (20 HP / cycle).
+                    float damage = entity instanceof PlayerEntity ? 1.0F : 5.0F;
+                    entity.damage(world, entity.getDamageSources().magic(), damage);
                     return true;
                 }
             }

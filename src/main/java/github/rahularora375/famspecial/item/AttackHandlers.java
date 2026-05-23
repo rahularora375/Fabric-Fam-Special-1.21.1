@@ -32,10 +32,20 @@ public class AttackHandlers {
     // without XP exposure meaningfully chew durability.
     private static final int DURABILITY_COST = 3;
 
-    // Fire Serpent 4/4 set-bonus payload: 14s of Messmer's Venom (amp 0 →
-    // ticks every 25 game-ticks, ~11 ticks total if the duration runs out
-    // uninterrupted). Every melee hit refreshes the duration.
-    private static final int MESSMERS_VENOM_DURATION_TICKS = 14 * 20;
+    // Fire Serpent 4/4 set-bonus payload: Messmer's Venom (amp 0 → ticks
+    // every 25 game-ticks at 5.0 magic damage = 2.5 hearts, lethal).
+    //
+    // 124 ticks (6.2 s) is intentional. The canApplyUpdateEffect modulo
+    // (`duration % 25 == 0`) fires whenever duration aligns to 25, so a
+    // 100-tick (5 s) duration would tick on application — landing the
+    // first hit inside the attack's 10-tick i-frame window and getting
+    // partially absorbed (the 19-vs-20 damage variance). 124 is the
+    // smallest non-25-multiple that still leaves room for 4 hits: the
+    // duration decrements past 124 → 100 (1st hit) → 75 → 50 → 25 →
+    // expires, so all four hits land cleanly outside the application's
+    // i-frame window for a deterministic 20 HP total. Every fresh hit
+    // refreshes the duration.
+    private static final int MESSMERS_VENOM_DURATION_TICKS = 124;
 
     // Thriller's Edge payload: 4s of Wither II. Amp 1 for Wither II.
     private static final int WITHER_ON_HIT_DURATION_TICKS = 4 * 20;
@@ -43,25 +53,22 @@ public class AttackHandlers {
 
     public static void register() {
         // Messmer's Venom propagation. Fires for any successful damage a
-        // player deals where the weapon is tagged #minecraft:spears — covers
-        // melee stabs, lunge dashes, and thrown spear hits (DamageSource
-        // carries the spear stack on all three paths). AttackEntityCallback
-        // only fires on left-click melee through PlayerEntity.attack, so it
-        // would miss lunge + thrown-spear hits; ALLOW_DAMAGE catches them all
-        // because every damage path funnels through LivingEntity.damage. We
+        // player wearing the full Fire Serpent set deals to anything other
+        // than themselves — weapon-agnostic, so fists, sword, axe, bow/arrow,
+        // snowball, anything carries the venom. ALLOW_DAMAGE catches every
+        // path because every damage path funnels through LivingEntity.damage
+        // (AttackEntityCallback would miss lunges and projectile hits). We
         // always return true — this isn't a cancellation, just a pre-damage
-        // hook. Gating on the weapon (not the attacker's set) keeps the
-        // mechanic tied to "you hit them with a spear while poisoned" rather
-        // than any swing while the effect is up, and any future spear — modded
-        // or vanilla — inherits the behavior for free.
+        // hook. Set membership is read indirectly through the aura
+        // (MESSMERS_VENOM is granted by ArmorEffects' fire_serpent_full_set
+        // bonus while 4/4 is worn), so the hasStatusEffect check IS the
+        // full-set check.
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((victim, source, amount) -> {
             Entity attacker = source.getAttacker();
             ItemStack weapon = source.getWeaponStack();
             if (attacker instanceof PlayerEntity player
                     && victim != attacker
-                    && player.hasStatusEffect(ModStatusEffects.MESSMERS_VENOM)
-                    && weapon != null
-                    && weapon.isIn(ItemTags.SPEARS)) {
+                    && player.hasStatusEffect(ModStatusEffects.MESSMERS_VENOM)) {
                 victim.addStatusEffect(new StatusEffectInstance(
                         ModStatusEffects.MESSMERS_VENOM,
                         MESSMERS_VENOM_DURATION_TICKS, 0,
