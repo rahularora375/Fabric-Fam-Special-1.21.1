@@ -167,19 +167,14 @@ public class ModStatusEffects {
             new StatusEffect(StatusEffectCategory.BENEFICIAL, 0xA0D2FF) {
                 @Override
                 public boolean canApplyUpdateEffect(int duration, int amplifier) {
-                    // Throttle — spawn particles every 14 ticks (~1.4 times/second)
-                    // for a slow, breath-like cadence rather than a steady stream.
-                    return duration % 14 == 0;
+                    // Uniform 20-tick cadence shared across all famspecial
+                    // custom-emit effects (Stormlight / Rotten Muscle / Undead
+                    // Resistance / Wither Touch).
+                    return duration % 20 == 0;
                 }
 
                 @Override
                 public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier) {
-                    // Lore-accurate Stormlight: faint glowing white wisps drifting
-                    // off the wearer like breath in cold air. Snowflake particles
-                    // are small, pale, and drift gently — the subtlest "radiant
-                    // mist" option vanilla offers. Count stays low (1 per burst)
-                    // and the upward drift speed is near zero so they hang in
-                    // place rather than streaming visibly.
                     double x = entity.getX();
                     double y = entity.getY() + entity.getHeight() * 0.5;
                     double z = entity.getZ();
@@ -190,15 +185,15 @@ public class ModStatusEffects {
     );
 
     // Radiant Might: Knight Radiant 4/4 set bonus. Real attribute-bearing
-    // effect — +2 ATTACK_DAMAGE (two-thirds of vanilla Strength I's +3.0).
-    // Applied by ArmorEffects' knight_radiant_full_set bonus while all four
-    // Shard pieces are worn. The attribute modifier chained on registration
-    // means vanilla StatusEffect handles application/removal automatically
-    // during the effect's active window — no applyUpdateEffect override
-    // needed. Color 0xE0F0FF matches the Knight Radiant NAME_PIECE palette
-    // (near-white-blue bold accent). Icon at
-    // assets/famspecial/textures/mob_effect/radiant_might.png is a copy of
-    // vanilla strength.png.
+    // effect — +8.0 ATTACK_DAMAGE (between vanilla Strength II's +6.0 and
+    // Strength III's +9.0). Applied by ArmorEffects' knight_radiant_full_set
+    // bonus while all four Shard pieces are worn. The attribute modifier
+    // chained on registration means vanilla StatusEffect handles
+    // application/removal automatically during the effect's active window —
+    // no applyUpdateEffect override needed. Color 0xE0F0FF matches the
+    // Knight Radiant NAME_PIECE palette (near-white-blue bold accent). Icon
+    // at assets/famspecial/textures/mob_effect/radiant_might.png is a copy
+    // of vanilla strength.png.
     public static final RegistryEntry<StatusEffect> RADIANT_MIGHT = Registry.registerReference(
             Registries.STATUS_EFFECT,
             Identifier.of(FamSpecial.MOD_ID, "radiant_might"),
@@ -206,12 +201,12 @@ public class ModStatusEffects {
                     .addAttributeModifier(
                             EntityAttributes.ATTACK_DAMAGE,
                             Identifier.of(FamSpecial.MOD_ID, "effect.radiant_might"),
-                            2.0,
+                            8.0,
                             EntityAttributeModifier.Operation.ADD_VALUE)
     );
 
     // Shardbearing HUD marker for Oathbringer: purely cosmetic — the actual
-    // gameplay (+5% current-HP bonus damage on melee hits, bypassing armor/
+    // gameplay (+10% max-HP bonus damage on melee hits, bypassing armor/
     // protection/resistance) lives in LivingEntityMixin and is driven by the
     // GRANTS_SHARDBEARING component on the attacker's main-hand stack. This
     // badge tells the player "yes, my hits are chipping extra HP right now."
@@ -242,7 +237,7 @@ public class ModStatusEffects {
             new StatusEffect(StatusEffectCategory.BENEFICIAL, 0x8B0000) {
                 @Override
                 public boolean canApplyUpdateEffect(int duration, int amplifier) {
-                    return duration % 10 == 0;
+                    return duration % 20 == 0;
                 }
 
                 @Override
@@ -269,7 +264,7 @@ public class ModStatusEffects {
             new StatusEffect(StatusEffectCategory.BENEFICIAL, 0x6B8E5A) {
                 @Override
                 public boolean canApplyUpdateEffect(int duration, int amplifier) {
-                    return duration % 12 == 0;
+                    return duration % 20 == 0;
                 }
 
                 @Override
@@ -298,7 +293,8 @@ public class ModStatusEffects {
     );
 
     // Wither Touch: Thriller's Edge (Necromancer axe) HUD badge + particle
-    // aura. Advertises the Wither-II-on-hit gameplay, which itself lives in
+    // aura. Advertises the Wither-IV-on-hit gameplay (8s vs mobs / 2s vs
+    // players, mob kills drop wither roses), which itself lives in
     // AttackHandlers' ALLOW_DAMAGE handler gated on the mainhand stack's
     // APPLIES_WITHER_ON_HIT flag. This effect only fires while the axe is
     // actually in the main hand — so the ash-like smoke puffing off the
@@ -311,7 +307,7 @@ public class ModStatusEffects {
             new StatusEffect(StatusEffectCategory.BENEFICIAL, 0xA8C49A) {
                 @Override
                 public boolean canApplyUpdateEffect(int duration, int amplifier) {
-                    return duration % 6 == 0;
+                    return duration % 20 == 0;
                 }
 
                 @Override
@@ -319,7 +315,7 @@ public class ModStatusEffects {
                     double x = entity.getX();
                     double y = entity.getY() + entity.getHeight() * 0.6;
                     double z = entity.getZ();
-                    world.spawnParticles(ParticleTypes.ASH, x, y, z, 2, 0.3, 0.4, 0.3, 0.01);
+                    world.spawnParticles(ParticleTypes.ASH, x, y, z, 1, 0.3, 0.4, 0.3, 0.01);
                     return true;
                 }
             }
@@ -429,9 +425,27 @@ public class ModStatusEffects {
             new StatusEffect(StatusEffectCategory.BENEFICIAL, 0xA47449) {}
     );
 
-    // Technoblade Never Dies: Raider's Legacy 4/4 set bonus HUD badge. Color
-    // matches the Raider LORE_ACCENT palette (idol gold). Phase 2 wires the
-    // gameplay (set-bonus payoff) against the 4/4 set gate.
+    // Technoblade Featherweight: Raider's Legacy 4/4 set bonus HUD badge for
+    // the fall-damage immunity half of the set bonus. Split out from
+    // TECHNOBLADE_NEVER_DIES so the wearer sees two distinct icons: the
+    // feather (Featherweight) advertising no-fall, and the gold idol
+    // (Technoblade Never Dies) advertising the totem save. Color matches the
+    // Raider LORE_ACCENT palette (idol gold) so both badges read as one set.
+    // Icon at assets/famspecial/textures/mob_effect/technoblade_featherweight.png
+    // is a byte-for-byte copy of vanilla mob_effect/slow_falling.png — the
+    // feather sprite is the most on-theme "no fall damage" badge.
+    public static final RegistryEntry<StatusEffect> TECHNOBLADE_FEATHERWEIGHT = Registry.registerReference(
+            Registries.STATUS_EFFECT,
+            Identifier.of(FamSpecial.MOD_ID, "technoblade_featherweight"),
+            new StatusEffect(StatusEffectCategory.BENEFICIAL, 0xF4C430) {}
+    );
+
+    // Technoblade Never Dies: Raider's Legacy 4/4 set bonus HUD badge for the
+    // totem-of-undying auto-save half of the set bonus. Wired in
+    // LivingEntityMixin's famspecial$technobladeTotemSave hook through
+    // TechnobladeSave.tryConsume, gated on this effect's presence. Color
+    // matches the Raider LORE_ACCENT palette (idol gold). The companion
+    // fall-damage immunity is gated on TECHNOBLADE_FEATHERWEIGHT (above).
     public static final RegistryEntry<StatusEffect> TECHNOBLADE_NEVER_DIES = Registry.registerReference(
             Registries.STATUS_EFFECT,
             Identifier.of(FamSpecial.MOD_ID, "technoblade_never_dies"),

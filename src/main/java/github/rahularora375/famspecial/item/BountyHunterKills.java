@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.projectile.ArrowEntity;
+import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -14,14 +15,15 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 
 public class BountyHunterKills {
-    private static final float DROP_CHANCE = 0.05f;
+    private static final float DROP_CHANCE = 0.10f;
 
     public static void register() {
         ServerLivingEntityEvents.AFTER_DEATH.register((victim, damageSource) -> {
             if (!(victim.getEntityWorld() instanceof ServerWorld serverWorld)) return;
             if (!(damageSource.getAttacker() instanceof ServerPlayerEntity attacker)) return;
             if (!Boolean.TRUE.equals(attacker.getEquippedStack(EquipmentSlot.LEGS).get(ModComponents.BOUNTY_HUNTER))) return;
-            if (!(damageSource.getSource() instanceof ArrowEntity)) return;
+            var source = damageSource.getSource();
+            if (!(source instanceof ArrowEntity) && !(source instanceof FireworkRocketEntity)) return;
             if (serverWorld.random.nextFloat() >= DROP_CHANCE) return;
 
             int count = serverWorld.random.nextInt(3) + 1;

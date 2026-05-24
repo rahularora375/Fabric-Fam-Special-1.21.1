@@ -65,6 +65,16 @@ public final class ThorEffects {
     // the base swing's damage before the lightning strike is added.
     private static final float LIGHTNING_CHANCE_CLEAR = 0.20f;
     private static final float LIGHTNING_CHANCE_THUNDERING = 1.00f;
+    // Lightning on Hit damage: 100.0 (50 hearts). Applied manually because we
+    // flag the spawned bolt as cosmetic (LightningEntity#setCosmetic(true)) so
+    // vanilla's own 5.0-damage / fire / block-ignition pass is skipped. We
+    // re-emit the lightning-bolt damage source (so armor / Protection enchant /
+    // status-effect resolution behaves exactly like a real lightning hit) and
+    // mirror vanilla's 8 s on-fire side effect manually. Visual and thunder
+    // sound replicate to all clients identically regardless of the cosmetic
+    // flag — that flag gates only server-side damage/fire/ignition logic.
+    private static final float LIGHTNING_DAMAGE = 100.0F;
+    private static final int LIGHTNING_FIRE_SECONDS = 8;
 
     // Per-player last-trigger tick for Storm's Awakening. Mirrors the
     // NecromancerSummon cooldown map pattern.
@@ -118,7 +128,17 @@ public final class ThorEffects {
         if (player instanceof ServerPlayerEntity sp) {
             bolt.setChanneler(sp);
         }
+        // Cosmetic flag: vanilla skips its own 5.0-damage / 8 s on-fire /
+        // block-ignition pass for cosmetic bolts. Visual + thunder sound still
+        // replicate to all clients identically.
+        bolt.setCosmetic(true);
         world.spawnEntity(bolt);
+        // Replicate vanilla lightning's gameplay side effects manually, with
+        // our boosted damage value. lightningBolt() resolves to the
+        // DamageTypes.LIGHTNING_BOLT damage source so armor / Protection /
+        // status-effect interactions behave exactly like a real lightning hit.
+        victim.damage(world, world.getDamageSources().lightningBolt(), LIGHTNING_DAMAGE);
+        victim.setOnFireFor(LIGHTNING_FIRE_SECONDS);
     }
 
     private static void onAfterDeath(LivingEntity entity, DamageSource source) {

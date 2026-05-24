@@ -15,9 +15,9 @@ Source-file inventory. Each row: path (relative to `src/main/`) → one-line pur
 |---|---|---|
 | `java/github/rahularora375/famspecial/component/ModComponents.java` | Custom `DataComponentType` registry (all `GRANTS_*`, `SET_ID`, `INDESTRUCTIBLE`, etc.). | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/effect/ModStatusEffects.java` | Custom status-effect registry (gameplay + cosmetic HUD badges). | `SYSTEMS.md` |
-| `java/github/rahularora375/famspecial/sound/ModSounds.java` | Custom `SoundEvent` registry (`NECROMANCER_SUMMON`, `BONUS_DIAMOND`). | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/sound/ModSounds.java` | Custom `SoundEvent` registry (`NECROMANCER_SUMMON`, `BONUS_DIAMOND`, `INDY`). | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/entity/ModEntities.java` | Custom `EntityType` registry (`VOLLEY_ARROW`); mirrors vanilla arrow tracking/dimensions. | `SYSTEMS.md` |
-| `java/github/rahularora375/famspecial/entity/VolleyArrowEntity.java` | `ArrowEntity` subclass; zeroes `timeUntilRegen` on hit so Crusader's Volley shots 2/3 bypass iframes. | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/entity/VolleyArrowEntity.java` | `ArrowEntity` subclass; caches the firing crossbow's weapon stack + pierce level so volley shots inherit enchant context. Iframe-clear is no longer here — see `FortuneGloryItem` for the unified mechanism. | `SYSTEMS.md` |
 
 ## Item catalog
 
@@ -36,7 +36,7 @@ Source-file inventory. Each row: path (relative to `src/main/`) → one-line pur
 | `java/github/rahularora375/famspecial/item/entries/ThorItems.java` | Mjolnir + Thor 5-piece set (Thunderhelm + 3 armor + Mjolnir; God of Thunder, Storm's Awakening on Warrior's Greaves, Asgardian's Flight). | `ITEMS.md` |
 | `java/github/rahularora375/famspecial/item/entries/RaidersLegacyItems.java` | Fortune & Glory crossbow + Raider's Legacy 4-piece armor set (Bounty Hunter, Technoblade Never Dies, Crusader's Volley). | `ITEMS.md` |
 | `java/github/rahularora375/famspecial/item/MjolnirMaceItem.java` | `MaceItem` subclass; right-click charges a dry-land riptide launch gated on `ASGARDIANS_FLIGHT`. | `SYSTEMS.md` |
-| `java/github/rahularora375/famspecial/item/FortuneGloryItem.java` | `CrossbowItem` subclass; one charge fires three shots back-to-back at a 2-tick cadence via a `VolleyArrowEntity` queue drained on server tick. | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/item/FortuneGloryItem.java` | `CrossbowItem` subclass; one charge fires three shots back-to-back at a 2-tick cadence via a `VolleyArrowEntity` (or `FireworkRocketEntity`) queue drained on server tick. Owns the unified iframe-bypass for shots 2/3 via a `Set<UUID> FG_PROJECTILE_UUIDS` + `ServerLivingEntityEvents.ALLOW_DAMAGE` hook covering both arrow and firework-rocket volley shots. | `SYSTEMS.md` |
 
 ## Runtime systems
 
@@ -44,10 +44,11 @@ Source-file inventory. Each row: path (relative to `src/main/`) → one-line pur
 |---|---|---|
 | `java/github/rahularora375/famspecial/item/ArmorEffects.java` | Server tick hub: `BONUSES` dispatch, 243-tick durability regen, main-hand attribute swap, `hasFullSet` helper. | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/item/AttackHandlers.java` | `ALLOW_DAMAGE` (Messmer's Venom / Wither-on-hit) + `AttackEntityCallback` (heal-on-hit). | `SYSTEMS.md` |
-| `java/github/rahularora375/famspecial/item/NecromancerSummon.java` | Event-driven 4/4 Necromancer summon: spawn, target-lock, friendly-fire gate, lifetime cleanup. | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/item/NecromancerSummon.java` | Event-driven 4/4 Necromancer summon: spawn, cumulative per-summoner attacker set (cap 16, FIFO eviction) driving target-lock, friendly-fire gate, lifetime cleanup. | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/item/ThorEffects.java` | Event-driven Thor handlers: lightning-on-hit roll (Mjolnir mainhand) + Storm's Awakening kill trigger (Thunderhelm) with per-player cooldown. | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/item/BlockBreakHandler.java` | `PlayerBlockBreakEvents.AFTER` hook rolling bonus-diamond drops for `BONUS_DIAMOND_CHANCE`-flagged pickaxes. | `SYSTEMS.md` |
-| `java/github/rahularora375/famspecial/item/BountyHunterKills.java` | `ServerLivingEntityEvents.AFTER_DEATH` hook rolling 5%/1–3-diamond drops on arrow kills by `BOUNTY_HUNTER`-legged wearers. | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/item/BountyHunterKills.java` | `ServerLivingEntityEvents.AFTER_DEATH` hook rolling 10%/1–3-diamond drops on arrow or firework-rocket kills by `BOUNTY_HUNTER`-legged wearers. | `SYSTEMS.md` |
+| `java/github/rahularora375/famspecial/item/TechnobladeSave.java` | Static-utility class backing the Raider 4/4 totem-of-undying auto-save (`tryConsume` / `isOnCooldown`). No `register()` — invoked directly from `LivingEntityMixin#famspecial$technobladeTotemSave`. 5-min per-set cooldown stamped via `TECHNOBLADE_TOTEM_COOLDOWN_END`; applies the exact vanilla totem effect bundle + screen flash + sound. | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/loot/ModLootTableModifier.java` | Hooks `LootTableEvents.MODIFY`; delegates to `LegendaryPool` / `MapsPool` / `ThemedSetsPool`. | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/loot/LegendaryPool.java` | 4-tier legendary pool (Crazy/S/A/F) + weight-30 Mending book. | `SYSTEMS.md` |
 | `java/github/rahularora375/famspecial/loot/MapsPool.java` | 4-tier maps pool (jungle temple / ancient city / woodland mansion). | `SYSTEMS.md` |
@@ -66,7 +67,7 @@ All under `java/github/rahularora375/famspecial/mixin/`. All documented in `MIXI
 | `GrindstoneScreenHandlerMixin.java` | TAIL re-stamp of custom components on merged-elytra disenchant outputs; otherwise vanilla. |
 | `AnvilScreenHandlerMixin.java` | Two HEAD-cancellable injects on `updateResult`: (1) themed-diamond-chestplate → vanilla-elytra merge; (2) Fortune & Glory crossbow merge (F&G + F&G or F&G + vanilla `Items.CROSSBOW`, result always F&G, Multishot stripped, QC IV preserved). Otherwise vanilla. |
 | `TridentItemMixin.java` | Dry-land riptide for Poseidon 4/4 (two `@Redirect`s on `isTouchingWaterOrRain`). |
-| `LivingEntityMixin.java` | Five `@ModifyReturnValue`s on `modifyAppliedDamage` (Messmer's Flame Aegis / Shardbearing / Undead Resistance / Sun's Protection / Technoblade Never Dies fall immunity). |
+| `LivingEntityMixin.java` | Six `@ModifyReturnValue`s on `modifyAppliedDamage` (Messmer's Flame Aegis / Shardbearing / Undead Resistance / Sun's Protection / Featherweight fall immunity / Technoblade Never Dies totem-save). Last two are declared in that order so the totem injector sees post-fall-zero values. |
 | `LivingEntityKnockbackMixin.java` | `@ModifyExpressionValue` on `LivingEntity#takeKnockback` `getAttributeValue` invoke; zeroes `KNOCKBACK_RESISTANCE` lookup when attacker has `EMPERORS_DIVIDE` (Sun Disc Spear). |
 | `PlayerEntityExhaustionMixin.java` | HEAD-cancel on `PlayerEntity#addExhaustion` while player has `SHURIMAN_ENDURANCE` (Shurima 4/4 saturation lock). |
 | `ApplyExhaustionEnchantmentEffectMixin.java` | Cancels Lunge exhaustion when stack has `NO_LUNGE_HUNGER`. |
@@ -87,7 +88,7 @@ All under `java/github/rahularora375/famspecial/mixin/`. All documented in `MIXI
 | `resources/fabric.mod.json` | Fabric manifest (main + client entrypoints, mixins pointer, `${version}` from gradle). | `SYSTEMS.md` (handshake section for version flow) |
 | `resources/famspecial.mixins.json` | SpongePowered Mixin manifest (16 entries). | `MIXINS.md` |
 | `resources/assets/famspecial/sounds.json` | Maps sound event ids to OGG asset paths. | `SYSTEMS.md` |
-| `resources/assets/famspecial/sounds/*.ogg` | Custom sound assets (`zombiezzz.ogg`, `lucky.ogg`, `raj_totem.ogg`). | `SYSTEMS.md` |
+| `resources/assets/famspecial/sounds/*.ogg` | Custom sound assets (`zombiezzz.ogg`, `lucky.ogg`, `indy.ogg`). | `SYSTEMS.md` |
 | `resources/assets/famspecial/lang/en_us.json` | Lang keys for effects, items, item group. | `SYSTEMS.md` |
 | `resources/assets/famspecial/textures/mob_effect/*.png` | Byte-for-byte vanilla-icon copies for custom status effects — do not author custom art. | `SYSTEMS.md` |
 | `resources/data/famspecial/tags/worldgen/structure/on_ancient_city_maps.json` | Structure tag backing the Ancient City explorer map destination. | `SYSTEMS.md` |

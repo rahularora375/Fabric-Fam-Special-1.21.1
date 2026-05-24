@@ -103,6 +103,7 @@ public class ArmorEffects {
             // paths that neither hook catches.
             ModStatusEffects.ASGARDIANS_FLIGHT,
             ModStatusEffects.BOUNTY_HUNTER,
+            ModStatusEffects.TECHNOBLADE_FEATHERWEIGHT,
             ModStatusEffects.TECHNOBLADE_NEVER_DIES,
             ModStatusEffects.CRUSADERS_VOLLEY
     );
@@ -246,8 +247,8 @@ public class ArmorEffects {
                     new Effect(ModStatusEffects.STORMLIGHT, 0)),
 
             // Oathbringer HUD badge: appears while the sword is in the main
-            // hand. Shardbearing is cosmetic — the actual gameplay (+5%
-            // current-HP bonus damage on the wearer's melee hits, past all
+            // hand. Shardbearing is cosmetic — the actual gameplay (+10%
+            // max-HP bonus damage on the wearer's melee hits, past all
             // mitigation) lives in LivingEntityMixin, keyed off the same
             // GRANTS_SHARDBEARING mainhand flag this trigger reads, so icon
             // and HP-chip share one gate and can't drift. No time gate.
@@ -255,11 +256,11 @@ public class ArmorEffects {
                     ctx -> Boolean.TRUE.equals(ctx.mainHand().get(ModComponents.GRANTS_SHARDBEARING)),
                     new Effect(ModStatusEffects.SHARDBEARING, 0)),
 
-            // Knight Radiant 4/4 set bonus: applies Radiant Might (+1
-            // ATTACK_DAMAGE via the effect's chained attribute modifier — a
-            // third of vanilla Strength I). No time gate. Distinct from the
-            // per-piece Stormlight aura above, which fires off any single
-            // Shard piece.
+            // Knight Radiant 4/4 set bonus: applies Radiant Might (+8.0
+            // ATTACK_DAMAGE via the effect's chained attribute modifier —
+            // between vanilla Strength II's +6.0 and Strength III's +9.0).
+            // No time gate. Distinct from the per-piece Stormlight aura
+            // above, which fires off any single Shard piece.
             Bonus.effects("knight_radiant_full_set",
                     ctx -> ctx.hasFullSet("knight_radiant"),
                     new Effect(ModStatusEffects.RADIANT_MIGHT, 0)),
@@ -306,7 +307,7 @@ public class ArmorEffects {
             // natural decay" convention as Mistborn Strength/Speed.
             Bonus.effects("esh_endra_navesh_full_set",
                     ctx -> ctx.hasFullSet("esh_endra_navesh"),
-                    new Effect(StatusEffects.HASTE, 0)),
+                    new Effect(StatusEffects.HASTE, 1)),
 
             // Just Hit Bro pickaxe HUD badge: Shadi Buff. Mirrors the
             // BONUS_DIAMOND_CHANCE mainhand gate used by BlockBreakHandler, so
@@ -324,9 +325,8 @@ public class ArmorEffects {
             // LivingEntityEquipMixin, biome leave is caught on the next 4-s
             // MOD_MANAGED diff pass — so the effect no longer outlives its
             // triggers by ~20 s of natural decay as in earlier versions.
-            Bonus.effects("suns_protection_boots_desert",
-                    ctx -> Boolean.TRUE.equals(ctx.boots().get(ModComponents.GRANTS_SUNS_PROTECTION))
-                            && ctx.inDesert(),
+            Bonus.effects("suns_protection_boots",
+                    ctx -> Boolean.TRUE.equals(ctx.boots().get(ModComponents.GRANTS_SUNS_PROTECTION)),
                     new Effect(ModStatusEffects.SUNS_PROTECTION, 0)),
 
             // Shurima 4/4 set + desert: grants SHURIMAN_ENDURANCE (cancels all
@@ -380,8 +380,29 @@ public class ArmorEffects {
                     ctx -> Boolean.TRUE.equals(ctx.legs().get(ModComponents.BOUNTY_HUNTER)),
                     new Effect(ModStatusEffects.BOUNTY_HUNTER, 0)),
 
-            Bonus.effects("technoblade_never_dies_full_set",
+            // Raider's Legacy 4/4 set bonus, split into two entries so the
+            // two halves of the Technoblade payoff have different visibility
+            // rules:
+            //   - Featherweight: always-on while 4/4 worn. Cosmetic feather
+            //     HUD icon advertising the fall-damage immunity bound in
+            //     LivingEntityMixin's famspecial$technobladeFallImmunity.
+            //   - Technoblade Never Dies: charge-gated indicator for the
+            //     totem-of-undying save gated by TechnobladeSave.tryConsume
+            //     in famspecial$technobladeTotemSave. Only active while the
+            //     full set is worn AND the totem save is off cooldown — so
+            //     the gold idol disappears during the 1-minute cooldown
+            //     window and returns when the save is charged again.
+            //     isOnCooldown reads the same per-stack cooldown stamp that
+            //     drives the totem-save gate, so icon and gameplay share one
+            //     source of truth. Mirrors the Necromancer / Rotten Muscle
+            //     pattern above.
+            Bonus.effects("technoblade_featherweight_full_set",
                     ctx -> ctx.hasFullSet("raider"),
+                    new Effect(ModStatusEffects.TECHNOBLADE_FEATHERWEIGHT, 0)),
+            Bonus.effects("technoblade_never_dies_full_set",
+                    ctx -> ctx.hasFullSet("raider")
+                            && !TechnobladeSave.isOnCooldown(ctx.player(),
+                                    ctx.player().getEntityWorld().getTime()),
                     new Effect(ModStatusEffects.TECHNOBLADE_NEVER_DIES, 0)),
 
             Bonus.effects("crusaders_volley_mainhand",

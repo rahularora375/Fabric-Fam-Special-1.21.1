@@ -80,7 +80,7 @@ public final class KnightRadiantItems {
     // Oathbringer is theme-adjacent — no SET_ID, no enchants, no attribute
     // overrides in this pass. Single-word name rendered in NAME_PIECE only.
     // Carries GRANTS_SHARDBEARING so the wearer's melee hits chip an extra
-    // 5% of the target's current HP past all mitigation (LivingEntityMixin)
+    // 10% of the target's max HP past all mitigation (LivingEntityMixin)
     // and the cosmetic Shardbearing HUD badge shows up top-right
     // (ArmorEffects' shardbearing_mainhand).
     public static ItemStack buildOathbringer(RegistryWrapper<Enchantment> enchants) {

@@ -9,7 +9,6 @@ import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Unit;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.world.World;
 import org.jspecify.annotations.Nullable;
 
@@ -53,13 +52,5 @@ public class VolleyArrowEntity extends ArrowEntity {
     @Override
     public byte getPierceLevel() {
         return this.cachedPierceLevel;
-    }
-
-    @Override
-    protected void onEntityHit(EntityHitResult entityHitResult) {
-        if (entityHitResult.getEntity() instanceof LivingEntity living) {
-            living.timeUntilRegen = 0;
-        }
-        super.onEntityHit(entityHitResult);
     }
 }

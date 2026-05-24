@@ -70,7 +70,7 @@ public class FamSpecialClient implements ClientModInitializer {
                 lines.add(grantLine("Grants ", "Empowered Riptide", full));
             }
             if ("knight_radiant".equals(setId)) {
-                // No time gate. 4/4 bonus is Radiant Might (+1 ATTACK_DAMAGE
+                // No time gate. 4/4 bonus is Radiant Might (+8.0 ATTACK_DAMAGE
                 // via the effect's chained attribute modifier). Stormlight is
                 // an any-piece aura and is surfaced on its own line below.
                 int count = countEquippedWithSetId("knight_radiant");
@@ -143,15 +143,26 @@ public class FamSpecialClient implements ClientModInitializer {
             if ("raider".equals(setId)) {
                 // Raider Set: 4-piece full set unlocks Technoblade Never Dies.
                 // Set line gold when 4/4 worn AND the effect is currently
-                // active on the player (mirrors the server-side gate). Per-
-                // piece grants on legs (Bounty Hunter) and on the Fortune &
-                // Glory crossbow (Crusader's Volley) are emitted by the
+                // active on the player (mirrors the server-side gate). The
+                // Grants line carries a crimson MM:SS suffix when the totem-
+                // save cooldown is ticking — read off TECHNOBLADE_TOTEM_COOLDOWN_END
+                // (stamped server-side when the save fires), so the player
+                // can see remaining time next to the effect name. Mirrors
+                // the Rotten Muscle / Storm's Awakening pattern. Per-piece
+                // grants on legs (Bounty Hunter) and on the Fortune & Glory
+                // crossbow (Crusader's Volley) are emitted by the
                 // BOUNTY_HUNTER and CRUSADERS_VOLLEY flag branches below.
                 int count = countEquippedWithSetId("raider");
                 boolean full = count == 4;
-                boolean technoActive = hasEffect(ModStatusEffects.TECHNOBLADE_NEVER_DIES);
-                lines.add(buildSetLine("Raider Set", count, full && technoActive));
-                lines.add(grantLine("Grants ", "Technoblade Never Dies", full && technoActive));
+                long cdRemaining = technobladeCooldownRemaining(stack);
+                boolean technoActive = hasEffect(ModStatusEffects.TECHNOBLADE_NEVER_DIES) && cdRemaining <= 0L;
+                boolean featherActive = hasEffect(ModStatusEffects.TECHNOBLADE_FEATHERWEIGHT);
+                // Set line stays gold while ANY half of the 4/4 bonus is live —
+                // Featherweight is the always-on half, so the line greys only
+                // when 4/4 is broken (not when Never Dies is cooling down).
+                lines.add(buildSetLine("Raider Set", count, full && (technoActive || featherActive)));
+                lines.add(grantLineWithCooldown("Grants ", "Technoblade Never Dies", technoActive, cdRemaining));
+                lines.add(grantLine("Grants ", "Featherweight", featherActive));
             }
             if (Boolean.TRUE.equals(stack.get(ModComponents.BOUNTY_HUNTER))) {
                 // Bounty Hunter lives on the Raider leggings — the per-piece
@@ -241,7 +252,7 @@ public class FamSpecialClient implements ClientModInitializer {
                 // Shardbearing fires whenever Oathbringer is in the main hand
                 // — mirrors the server-side gate in ArmorEffects' shardbearing_mainhand
                 // bonus (HUD badge) and LivingEntityMixin's modifyAppliedDamage
-                // handler (+5% current-HP chip past all mitigation). Purely
+                // handler (+10% max-HP chip past all mitigation). Purely
                 // cosmetic status-effect badge; the chip is mixin-driven.
                 boolean active = isMainHandWithFlag(ModComponents.GRANTS_SHARDBEARING);
                 lines.add(grantLine("Grants ", "Shardbearing", active));
@@ -264,13 +275,13 @@ public class FamSpecialClient implements ClientModInitializer {
                 lines.add(grantLine("Grants ", "Wither Touch", active));
             }
             if (Boolean.TRUE.equals(stack.get(ModComponents.GRANTS_SUNS_PROTECTION))) {
-                // Sun's Protection fires when the boots are worn AND the
-                // player is in any desert-family biome (desert / badlands /
-                // eroded badlands) — mirrors the server gate in ArmorEffects.
-                // Matches the other desert-gated tooltip; state flips in
-                // sync with the server gate via the MOD_MANAGED diff pass.
-                boolean active = isWornWithFlag(EquipmentSlot.FEET, ModComponents.GRANTS_SUNS_PROTECTION)
-                        && isInDesert();
+                // Sun's Protection fires whenever the boots are worn — no
+                // biome gate. (The server-side bonus was rebound from
+                // suns_protection_boots_desert to suns_protection_boots so
+                // the Resistance I damage reduction applies everywhere; the
+                // tooltip's active state matches.) The Shurima Set's
+                // Shuriman Endurance grant above still gates on desert.
+                boolean active = isWornWithFlag(EquipmentSlot.FEET, ModComponents.GRANTS_SUNS_PROTECTION);
                 lines.add(grantLine("Grants ", "Sun's Protection", active));
             }
             if (Boolean.TRUE.equals(stack.get(ModComponents.IGNORES_KB_RESISTANCE))) {
@@ -351,6 +362,18 @@ public class FamSpecialClient implements ClientModInitializer {
     // Greaves-stamped STORM_COOLDOWN_END for Storm's Awakening.
     private static long stormCooldownRemaining(ItemStack stack) {
         Long end = stack.get(ModComponents.STORM_COOLDOWN_END);
+        if (end == null) return 0L;
+        ClientWorld world = MinecraftClient.getInstance().world;
+        if (world == null) return 0L;
+        long remaining = end - world.getTime();
+        return Math.max(0L, remaining);
+    }
+
+    // Same shape as necromancerCooldownRemaining / stormCooldownRemaining,
+    // reading the Raider-set-stamped TECHNOBLADE_TOTEM_COOLDOWN_END for the
+    // Technoblade Never Dies totem save.
+    private static long technobladeCooldownRemaining(ItemStack stack) {
+        Long end = stack.get(ModComponents.TECHNOBLADE_TOTEM_COOLDOWN_END);
         if (end == null) return 0L;
         ClientWorld world = MinecraftClient.getInstance().world;
         if (world == null) return 0L;

@@ -33,8 +33,8 @@ public final class MistbornItems {
     // netherite (3.2 = 2 × 1.6); only damage changes with the day/night cycle.
     //
     // Vanilla netherite sword baseline: 8 damage, 1.6 speed.
-    // Day   → 4 Attack Damage (half vanilla), 3.2 Attack Speed (double vanilla)
-    // Night → 8 Attack Damage (full vanilla), 3.2 Attack Speed (double vanilla)
+    // Day   → 8 Attack Damage (full vanilla),    3.2 Attack Speed (double vanilla)
+    // Night → 12 Attack Damage (1.5× vanilla),   3.2 Attack Speed (double vanilla)
     //
     // Empty-hand bases the attributes stack on top of: 1.0 damage, 4.0 speed.
     // So damage modifier = target − 1.0; speed modifier = target − 4.0.
@@ -42,7 +42,7 @@ public final class MistbornItems {
             .add(EntityAttributes.ATTACK_DAMAGE,
                     new EntityAttributeModifier(
                             Identifier.ofVanilla("base_attack_damage"),
-                            3.0,
+                            7.0,
                             EntityAttributeModifier.Operation.ADD_VALUE),
                     AttributeModifierSlot.MAINHAND)
             .add(EntityAttributes.ATTACK_SPEED,
@@ -57,7 +57,7 @@ public final class MistbornItems {
             .add(EntityAttributes.ATTACK_DAMAGE,
                     new EntityAttributeModifier(
                             Identifier.ofVanilla("base_attack_damage"),
-                            7.0,
+                            11.0,
                             EntityAttributeModifier.Operation.ADD_VALUE),
                     AttributeModifierSlot.MAINHAND)
             .add(EntityAttributes.ATTACK_SPEED,
@@ -112,7 +112,7 @@ public final class MistbornItems {
     // Atium Dagger — Mistborn-adjacent weapon. Marker component NIGHT_STRENGTH
     // makes ArmorEffects swap its AttributeModifiers to the "night" form while
     // held in the main hand at night or in Nether/End, so the damage tooltip
-    // shifts (day 4 → night 8). Speed stays constant at double vanilla (3.2).
+    // shifts (day 8 → night 12). Speed stays constant at double vanilla (3.2).
     public static ItemStack buildAtiumDagger(RegistryWrapper<Enchantment> enchants) {
         ItemStack atiumDagger = ModItemGroups.buildItem(Items.NETHERITE_SWORD,
                 twoTone("Atium", "Dagger"),

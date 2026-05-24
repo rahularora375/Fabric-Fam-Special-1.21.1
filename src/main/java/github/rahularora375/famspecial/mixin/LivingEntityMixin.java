@@ -3,6 +3,7 @@ package github.rahularora375.famspecial.mixin;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import github.rahularora375.famspecial.component.ModComponents;
 import github.rahularora375.famspecial.effect.ModStatusEffects;
+import github.rahularora375.famspecial.item.TechnobladeSave;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -27,6 +28,11 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
 
+    // Shardbearing chip magnitude: 10% of the target's max HP, added on
+    // top of the post-mitigation damage. No PvE/PvP split — the chip is
+    // uniform against players and mobs alike.
+    private static final float OATHBRINGER_HP_DAMAGE_FRACTION = 0.10F;
+
     @ModifyReturnValue(
             method = "modifyAppliedDamage",
             at = @At("RETURN")
@@ -38,18 +44,19 @@ public abstract class LivingEntityMixin {
         return original * 0.2f;
     }
 
-    // Shardbearing current-HP chip (Oathbringer gameplay): when the attacker is
+    // Shardbearing max-HP chip (Oathbringer gameplay): when the attacker is
     // a LivingEntity holding a stack flagged GRANTS_SHARDBEARING in their main
-    // hand, add 7% of the target's current HP as bonus damage. Hooks
-    // modifyAppliedDamage rather than applyArmorToDamage so the bonus lands
-    // AFTER vanilla armor/protection/resistance math — it bypasses mitigation
-    // the same way the previous armor-pierce did, but always contributes
-    // something on unarmored mobs (where piercing had nothing to pierce).
-    // self.getHealth() at this point is the target's HP BEFORE the incoming
-    // hit lands, so 7% reflects pre-hit current HP. Non-attacker damage
-    // (lava/fall/etc.) and non-LivingEntity attackers short-circuit.
-    // Projectile/indirect hits only chip if the attacker is STILL holding
-    // Oathbringer at impact time — the convention used elsewhere in this repo.
+    // hand, add OATHBRINGER_HP_DAMAGE_FRACTION (10%) of the target's max HP
+    // as bonus damage. Hooks modifyAppliedDamage rather than applyArmorToDamage
+    // so the bonus lands AFTER vanilla armor/protection/resistance math — it
+    // bypasses mitigation the same way the previous armor-pierce did, but
+    // always contributes something on unarmored mobs (where piercing had
+    // nothing to pierce). self.getMaxHealth() is the target's max HP, so the
+    // chip magnitude is constant per target regardless of remaining HP.
+    // Non-attacker damage (lava/fall/etc.) and non-LivingEntity attackers
+    // short-circuit. Projectile/indirect hits only chip if the attacker is
+    // STILL holding Oathbringer at impact time — the convention used
+    // elsewhere in this repo.
     @ModifyReturnValue(
             method = "modifyAppliedDamage",
             at = @At("RETURN")
@@ -60,7 +67,7 @@ public abstract class LivingEntityMixin {
         ItemStack mainHand = livingAttacker.getMainHandStack();
         if (!Boolean.TRUE.equals(mainHand.get(ModComponents.GRANTS_SHARDBEARING))) return original;
         LivingEntity self = (LivingEntity) (Object) this;
-        return original + self.getHealth() * 0.07f;
+        return original + self.getMaxHealth() * OATHBRINGER_HP_DAMAGE_FRACTION;
     }
 
     // Smooth Criminal's Vestment (Necromancer chestplate) grants 60% damage
@@ -110,8 +117,28 @@ public abstract class LivingEntityMixin {
     private float famspecial$technobladeFallImmunity(float original, DamageSource source) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (!(self instanceof PlayerEntity)) return original;
-        if (!self.hasStatusEffect(ModStatusEffects.TECHNOBLADE_NEVER_DIES)) return original;
+        if (!self.hasStatusEffect(ModStatusEffects.TECHNOBLADE_FEATHERWEIGHT)) return original;
         if (!source.isOf(DamageTypes.FALL)) return original;
         return 0.0f;
+    }
+
+    // Technoblade totem-save: when an incoming hit would otherwise drop the
+    // wearer to 0 HP, consume the Raider 4/4 30-min cooldown and clamp damage
+    // so the wearer survives at 1 HP with the vanilla totem effect bundle.
+    // DECLARATION ORDER MATTERS: this @ModifyReturnValue MUST be declared
+    // AFTER famspecial$technobladeFallImmunity. Mixin chains return-value
+    // injectors in declaration order, so this injector receives the
+    // post-fall-zero return value — which means a fatal fall has already
+    // been zeroed out by the time we test (original >= totalHP) and the
+    // save won't burn its cooldown on a fall the previous injector already
+    // negated.
+    @ModifyReturnValue(method = "modifyAppliedDamage", at = @At("RETURN"))
+    private float famspecial$technobladeTotemSave(float original, DamageSource source) {
+        LivingEntity self = (LivingEntity) (Object) this;
+        if (!(self instanceof PlayerEntity player)) return original;
+        float totalHP = self.getHealth() + self.getAbsorptionAmount();
+        if (original < totalHP) return original;
+        if (!TechnobladeSave.tryConsume(player, source)) return original;
+        return totalHP - 1.0f;
     }
 }

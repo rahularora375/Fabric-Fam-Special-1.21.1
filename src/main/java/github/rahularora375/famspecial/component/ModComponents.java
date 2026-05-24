@@ -127,13 +127,13 @@ public class ModComponents {
             ComponentType.<Boolean>builder().codec(Codec.BOOL).build()
     );
 
-    // Main-hand weapon flag: grants Shardbearing (+5% current-HP bonus damage
+    // Main-hand weapon flag: grants Shardbearing (+10% max-HP bonus damage
     // on the wearer's melee hits, bypassing armor/protection/resistance) while
     // held. Lives on Oathbringer, the Knight Radiant signature sword. Two
     // consumers read this flag off the mainhand stack: ArmorEffects'
     // shardbearing_mainhand Bonus (applies the cosmetic SHARDBEARING HUD
     // badge) and LivingEntityMixin's modifyAppliedDamage ModifyReturnValue
-    // (adds the current-HP chip onto final post-mitigation damage).
+    // (adds the max-HP chip onto final post-mitigation damage).
     public static final ComponentType<Boolean> GRANTS_SHARDBEARING = Registry.register(
             Registries.DATA_COMPONENT_TYPE,
             Identifier.of(FamSpecial.MOD_ID, "grants_shardbearing"),
@@ -152,10 +152,11 @@ public class ModComponents {
             ComponentType.<Boolean>builder().codec(Codec.BOOL).build()
     );
 
-    // Main-hand weapon flag: applies Wither II for 4s to the target on any
-    // successful melee/projectile hit. Handled additively in AttackHandlers'
-    // ALLOW_DAMAGE handler alongside the Messmer's Venom branch. Lives on
-    // Thriller's Edge.
+    // Main-hand weapon flag: applies Wither IV to the target on any
+    // successful melee/projectile hit — 8s vs mobs, 2s vs players. Handled
+    // additively in AttackHandlers' ALLOW_DAMAGE handler alongside the
+    // Messmer's Venom branch. Mob kills via wither tick drop a wither rose.
+    // Lives on Thriller's Edge.
     public static final ComponentType<Boolean> APPLIES_WITHER_ON_HIT = Registry.register(
             Registries.DATA_COMPONENT_TYPE,
             Identifier.of(FamSpecial.MOD_ID, "applies_wither_on_hit"),
@@ -259,6 +260,19 @@ public class ModComponents {
             ComponentType.<Long>builder().codec(Codec.LONG).build()
     );
 
+    // Per-stack Technoblade totem-save cooldown: absolute world-tick at which
+    // the 30-min cooldown expires. Stamped on all 4 worn Raider pieces when
+    // TechnobladeSave fires. Client reads this to render the MM:SS countdown
+    // in the armor tooltip; server reads it to gate re-trigger (no separate
+    // per-UUID map — the stamp itself is the source of truth here). Stays
+    // stamped after expiry (the tooltip just hides once currentTime >= value).
+    // Mirrors STORM_COOLDOWN_END / NECROMANCER_COOLDOWN_END.
+    public static final ComponentType<Long> TECHNOBLADE_TOTEM_COOLDOWN_END = Registry.register(
+            Registries.DATA_COMPONENT_TYPE,
+            Identifier.of(FamSpecial.MOD_ID, "technoblade_totem_cooldown_end"),
+            ComponentType.<Long>builder().codec(Codec.LONG).build()
+    );
+
     // Main-hand weapon flag: marker identifying Mjolnir (the Thor mace)
     // specifically — not any MaceItem instance. Used by the 5/5 helper
     // (ArmorEffects.hasFullSetWithMjolnir) and by ThorEffects' right-click
@@ -325,7 +339,8 @@ public class ModComponents {
             STORM_COOLDOWN_END,
             THOR_MACE,
             BOUNTY_HUNTER,
-            CRUSADERS_VOLLEY
+            CRUSADERS_VOLLEY,
+            TECHNOBLADE_TOTEM_COOLDOWN_END
     );
 
     // Flags intentionally NOT carried across a chestplate→elytra merge.

@@ -14,7 +14,7 @@ import net.minecraft.sound.SoundCategory;
 public class BlockBreakHandler {
     // 1 / N per block broken. Rolled once per break regardless of how many
     // drops the underlying block itself yields.
-    private static final int BONUS_DIAMOND_ROLL_DENOMINATOR = 800;
+    private static final int BONUS_DIAMOND_ROLL_DENOMINATOR = 700;
 
     public static void register() {
         // AFTER fires post-break, so the block has already been consumed and

@@ -103,9 +103,10 @@ public final class NecromancerItems {
 
     // Theme-adjacent — no SET_ID, so it doesn't count toward 4/4.
     // Thriller's Edge: DIAMOND_AXE base with modest enchants. The signature
-    // behavior is Wither II on hit (APPLIES_WITHER_ON_HIT) — applied
-    // additively by AttackHandlers' ALLOW_DAMAGE handler, covering melee
-    // plus any future projectile axe-hit path. Gates on the stack flag,
+    // behavior is Wither IV on hit (APPLIES_WITHER_ON_HIT), 8s vs mobs / 2s
+    // vs players — applied additively by AttackHandlers' ALLOW_DAMAGE
+    // handler, covering melee plus any future projectile axe-hit path. Mob
+    // kills via wither tick drop a wither rose. Gates on the stack flag,
     // not the tool material, so the flag is the single source of truth.
     public static ItemStack buildThrillersEdge(RegistryWrapper<Enchantment> enchants) {
         ItemStack thrillersEdge = ModItemGroups.buildItem(Items.NETHERITE_AXE,

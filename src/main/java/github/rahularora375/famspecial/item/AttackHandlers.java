@@ -4,14 +4,18 @@ import github.rahularora375.famspecial.FamSpecial;
 import github.rahularora375.famspecial.component.ModComponents;
 import github.rahularora375.famspecial.effect.ModStatusEffects;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
@@ -19,6 +23,10 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AttackHandlers {
     // Sage's Grace tuning. 1 heart on a normal hit, double on a crit —
@@ -47,9 +55,21 @@ public class AttackHandlers {
     // refreshes the duration.
     private static final int MESSMERS_VENOM_DURATION_TICKS = 124;
 
-    // Thriller's Edge payload: 4s of Wither II. Amp 1 for Wither II.
-    private static final int WITHER_ON_HIT_DURATION_TICKS = 4 * 20;
-    private static final int WITHER_ON_HIT_AMPLIFIER = 1;
+    // Thriller's Edge payload: Wither IV, 8s vs mobs / 2s vs players; mob
+    // kills via wither tick drop a wither rose. Amp 3 for Wither IV (amp 0
+    // = I, 1 = II, 2 = III, 3 = IV). PvE/PvP duration split mirrors the
+    // Messmer's Venom precedent above — heavy on mobs, restrained on
+    // players to keep PvP non-degenerate.
+    private static final int WITHER_ON_HIT_DURATION_TICKS_PVE = 8 * 20;
+    private static final int WITHER_ON_HIT_DURATION_TICKS_PVP = 2 * 20;
+    private static final int WITHER_ON_HIT_AMPLIFIER = 3;
+
+    // UUIDs of mobs (never players) currently wither-tagged by Thriller's
+    // Edge. Used by the AFTER_DEATH hook to drop a wither rose when a
+    // tagged mob is killed by wither-tick damage. Skip players on apply so
+    // PvP wither kills don't drop roses. Cleaned up on rose drop (one rose
+    // per death) and by a 200-tick sweep against currently-loaded entities.
+    private static final Set<UUID> WITHER_TAGGED_MOBS = ConcurrentHashMap.newKeySet();
 
     public static void register() {
         // Messmer's Venom propagation. Fires for any successful damage a
@@ -75,21 +95,60 @@ public class AttackHandlers {
                         false, true, true), player);
             }
 
-            // Thriller's Edge Wither-on-hit propagation. Additive — runs
-            // alongside the venom branch, no mutual exclusion. Main-hand only:
-            // we check the attacker's main-hand stack directly rather than
+            // Thriller's Edge Wither-on-hit propagation: Wither IV, 8s vs
+            // mobs / 2s vs players. Mob kills via wither tick drop a wither
+            // rose (see AFTER_DEATH hook below). Additive — runs alongside
+            // the venom branch, no mutual exclusion. Main-hand only: we
+            // check the attacker's main-hand stack directly rather than
             // source.getWeaponStack(), so an off-hand flagged stack does not
             // propagate Wither. Matches the axe's AttributeModifierSlot.MAINHAND
             // gating on its attack-speed modifier — both only apply in main hand.
             if (attacker instanceof PlayerEntity witherPlayer
                     && victim != attacker
                     && Boolean.TRUE.equals(witherPlayer.getMainHandStack().get(ModComponents.APPLIES_WITHER_ON_HIT))) {
+                // PvE/PvP duration split mirrors Messmer's Venom: full
+                // pressure on mobs (8 s), restrained on players (2 s).
+                boolean victimIsPlayer = victim instanceof PlayerEntity;
+                int duration = victimIsPlayer
+                        ? WITHER_ON_HIT_DURATION_TICKS_PVP
+                        : WITHER_ON_HIT_DURATION_TICKS_PVE;
                 victim.addStatusEffect(new StatusEffectInstance(
                         StatusEffects.WITHER,
-                        WITHER_ON_HIT_DURATION_TICKS, WITHER_ON_HIT_AMPLIFIER,
+                        duration, WITHER_ON_HIT_AMPLIFIER,
                         false, true, true), witherPlayer);
+                // Tag mob victims only — players never drop wither roses.
+                if (!victimIsPlayer) {
+                    WITHER_TAGGED_MOBS.add(victim.getUuid());
+                }
             }
             return true;
+        });
+
+        // Thriller's Edge wither rose drop. Fires when a tagged mob dies
+        // to wither-tick damage that originated from a hit we tagged.
+        // Mirrors BountyHunterKills' Block.dropStack idiom for the drop.
+        ServerLivingEntityEvents.AFTER_DEATH.register((victim, damageSource) -> {
+            if (!(victim.getEntityWorld() instanceof ServerWorld serverWorld)) return;
+            if (victim instanceof PlayerEntity) return;
+            if (!damageSource.isOf(DamageTypes.WITHER)) return;
+            if (!WITHER_TAGGED_MOBS.remove(victim.getUuid())) return;
+            Block.dropStack(serverWorld, victim.getBlockPos(), new ItemStack(Items.WITHER_ROSE));
+        });
+
+        // 200-tick (10 s) sweep — wither lasts 160 ticks max on mobs, so a
+        // 10 s cadence is generous. Mirrors FortuneGloryItem's tick-handler
+        // cleanup pattern (entity-still-loaded check). Despawn / chunk
+        // unload paths never fire AFTER_DEATH, so without this the set
+        // would leak.
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            if (server.getOverworld().getTime() % 200L != 0L) return;
+            if (WITHER_TAGGED_MOBS.isEmpty()) return;
+            WITHER_TAGGED_MOBS.removeIf(uuid -> {
+                for (ServerWorld world : server.getWorlds()) {
+                    if (world.getEntity(uuid) != null) return false;
+                }
+                return true;
+            });
         });
 
         // Fires on every player left-click against an entity, BEFORE vanilla

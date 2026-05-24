@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
@@ -37,7 +38,9 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.Iterator;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class FortuneGloryItem extends CrossbowItem {
@@ -49,6 +52,7 @@ public class FortuneGloryItem extends CrossbowItem {
     public static FortuneGloryItem FORTUNE_AND_GLORY;
 
     private static final ConcurrentLinkedQueue<ScheduledShot> PENDING_SHOTS = new ConcurrentLinkedQueue<>();
+    private static final Set<UUID> FG_PROJECTILE_UUIDS = ConcurrentHashMap.newKeySet();
 
     public FortuneGloryItem(Settings settings) { super(settings); }
 
@@ -68,17 +72,22 @@ public class FortuneGloryItem extends CrossbowItem {
 
     public static void registerTickHandler() {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (PENDING_SHOTS.isEmpty()) return;
             long now = server.getOverworld().getTime();
-            Iterator<ScheduledShot> iter = PENDING_SHOTS.iterator();
-            while (iter.hasNext()) {
-                ScheduledShot scheduled = iter.next();
-                if (scheduled.targetTick() > now) continue;
-                iter.remove();
-                ServerPlayerEntity player = server.getPlayerManager().getPlayer(scheduled.playerUuid());
-                if (player == null || !player.isAlive()) continue;
-                if (!(player.getEntityWorld() instanceof ServerWorld serverWorld)) continue;
-                fireScheduledShot(serverWorld, player, scheduled.crossbowStack(), scheduled.projectileStack());
+            if (!PENDING_SHOTS.isEmpty()) {
+                Iterator<ScheduledShot> iter = PENDING_SHOTS.iterator();
+                while (iter.hasNext()) {
+                    ScheduledShot scheduled = iter.next();
+                    if (scheduled.targetTick() > now) continue;
+                    iter.remove();
+                    ServerPlayerEntity player = server.getPlayerManager().getPlayer(scheduled.playerUuid());
+                    if (player == null || !player.isAlive()) continue;
+                    if (!(player.getEntityWorld() instanceof ServerWorld serverWorld)) continue;
+                    fireScheduledShot(serverWorld, player, scheduled.crossbowStack(), scheduled.projectileStack());
+                }
+            }
+            if (now % 20L == 0L) {
+                ServerWorld overworld = server.getOverworld();
+                FG_PROJECTILE_UUIDS.removeIf(uuid -> overworld.getEntity(uuid) == null);
             }
         });
 
@@ -89,6 +98,14 @@ public class FortuneGloryItem extends CrossbowItem {
             if (entity instanceof ServerPlayerEntity p) {
                 PENDING_SHOTS.removeIf(s -> s.playerUuid().equals(p.getUuid()));
             }
+        });
+
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register((victim, source, amount) -> {
+            Entity src = source.getSource();
+            if (src != null && FG_PROJECTILE_UUIDS.contains(src.getUuid())) {
+                victim.timeUntilRegen = 0;
+            }
+            return true;
         });
 
         FamSpecial.LOGGER.info("Registering Fortune & Glory tick handler for {}", FamSpecial.MOD_ID);
@@ -104,6 +121,7 @@ public class FortuneGloryItem extends CrossbowItem {
             Vec3d rotationVec = player.getRotationVec(1.0F);
             rocket.setVelocity(rotationVec.x, rotationVec.y, rotationVec.z, FIREWORK_ROCKET_SPEED, 1.0F);
             world.spawnEntity(rocket);
+            FG_PROJECTILE_UUIDS.add(rocket.getUuid());
         } else {
             int projectileCount = EnchantmentHelper.getProjectileCount(world, crossbowStack, player, 1);
             if (projectileCount <= 0) return;
@@ -130,6 +148,7 @@ public class FortuneGloryItem extends CrossbowItem {
                 arrow.setVelocity(velocity.x(), velocity.y(), velocity.z(), CROSSBOW_PROJECTILE_SPEED, 1.0F);
 
                 ProjectileEntity.spawn(arrow, world, arrowItemStack);
+                FG_PROJECTILE_UUIDS.add(arrow.getUuid());
             }
         }
 
@@ -159,6 +178,7 @@ public class FortuneGloryItem extends CrossbowItem {
 
         long now = world.getTime();
         UUID uuid = user.getUuid();
+        // Shot 1 fires via super.use above; only shots 2 and 3 need the iframe bypass since shot 1 is the first hit.
         PENDING_SHOTS.add(new ScheduledShot(now + SHOT_2_DELAY_TICKS, stack, uuid, capturedProjectile));
         PENDING_SHOTS.add(new ScheduledShot(now + SHOT_3_DELAY_TICKS, stack, uuid, capturedProjectile));
         if (user instanceof ServerPlayerEntity sp) {
